@@ -1,61 +1,64 @@
-#!/bin/bash
+#!/usr/bin/ruby
 
-default_project="Work"
-default_context="Online"
-default_due="7:00 PM"
-
-command="$*"
-
-bin=`dirname $0`
-
-echo "command: $command"
-
-function sr {
-    echo $2 | perl -0777 -pe "$1"
-}
-
-function normalize_time {
-    sr 's/^(\d)(\s|\w)/$1:00$2/' "$1"
-}
-
-function strip_time {
-    sr 's/\d{1,2}(:\d\d)?\s?(am|pm)//i' "$1"
-}
-
-function strip_project {
-    sr 's/\.\w+//' "$1"
-}
-
-function strip_context {
-    sr 's/\#\w+//' "$1"
-}
-
-context=`echo $command | egrep -io "#\w*" | sed 's/#//'`
-project=`echo $command | egrep -io "\.\w*" | sed 's/\.//'`
-due=`echo $command | egrep -io "\d\d?:?(\d\d)? ?(am|pm)?"`
-due=`normalize_time $due`
+require 'date'
+require 'time'
 
 
-if [ -z "$context" ]; then
-    context=$default_context
-fi
-if [ -z "$project" ]; then
-    project=$default_project
-fi
-if [ -z "$due" ]; then
-    due=$default_due
-fi
+def get_due_date(string)
+  begin
+    string = strip_project(string)
+    string = strip_context(string)
+    puts("parsing date: #{string}")
+    date = Date.parse(string)
+    date += (date < Date.today) ? 7 : 0
+    time = Time.parse(string)
+    return "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
+  rescue
+    return "7:00 PM"
+  end
+end
 
-echo "context: $context"
-echo "project: $project"
-echo "due    : $due"
+def get_project(string)
+  project = /\.(\w+)/.match(string).captures[0] rescue "work"
+  return project
+end
 
-name=`strip_time "$command"`
-name=`strip_project "$name"`
-name=`strip_context "$name"`
-name=`echo $name`
+def strip_project(string)
+  return string.gsub(/\.\w+/, "")
+end
 
-echo "name   : $name"
+def get_context(string)
+  project = /\#(\w+)/.match(string).captures[0] rescue "online"
+  return project
+end  
 
-osascript $bin/CreateTask.scpt "$context" "$project" "$name" "$due"
+def strip_context(string)
+  return string.gsub(/\#\w+/, "")
+end
+
+def strip_tail(string)
+  return string.gsub(/\/\/.*$/, "")
+end
+
+def get_task_name(string)
+  string = strip_context(string)
+  string = strip_project(string)
+  string = strip_tail(string)
+  return string;
+end
+      
+command = ARGV.join(" ")
+project = get_project(command)
+context = get_context(command)
+task_name = get_task_name(command)
+due_date = get_due_date(command)
+      
+
+puts "project : #{project}"
+puts "context : #{context}"
+puts "due date: #{due_date}"
+puts "task    : #{task_name}"
+puts "HOME: "
+
+puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
 

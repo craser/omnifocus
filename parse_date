@@ -1,0 +1,14 @@
+#!/usr/bin/ruby
+
+require 'date'
+require 'time'
+
+string = ARGV[0]
+date = Date.parse(string)
+date += (date < Date.today) ? 7 : 0
+time = Time.parse(string)
+puts "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
+
+
+
+
