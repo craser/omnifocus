@@ -6,8 +6,7 @@ require 'time'
 
 def get_due_date(string)
   begin
-    string = strip_project(string)
-    string = strip_context(string)
+    string = get_meta(string)
     puts("parsing date: #{string}")
     date = Date.parse(string)
     date += (date < Date.today) ? 7 : 0
@@ -19,31 +18,26 @@ def get_due_date(string)
 end
 
 def get_project(string)
+  string = get_meta(string)
   project = /\.(\w+)/.match(string).captures[0] rescue "work"
   return project
 end
 
-def strip_project(string)
-  return string.gsub(/\.\w+/, "")
-end
-
 def get_context(string)
+  string = get_meta(string)
   project = /\#(\w+)/.match(string).captures[0] rescue "online"
   return project
 end  
 
-def strip_context(string)
-  return string.gsub(/\#\w+/, "")
-end
-
-def strip_tail(string)
-  return string.gsub(/\/\/.*$/, "")
+def get_meta(string)
+  puts("string: #{string}")
+  meta = string.gsub(/^.*?(\/\/|$)/, "")
+  puts("meta: #{meta}")
+  return meta
 end
 
 def get_task_name(string)
-  string = strip_context(string)
-  string = strip_project(string)
-  string = strip_tail(string)
+  string = string.gsub(/\/\/.*$/, "")
   return string;
 end
       
@@ -60,5 +54,5 @@ puts "due date: #{due_date}"
 puts "task    : #{task_name}"
 puts "HOME: "
 
-puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
+#puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
 
