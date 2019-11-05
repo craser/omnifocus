@@ -3,15 +3,21 @@
 require 'date'
 require 'time'
 
-
+# TODO: Parse "7 days"
 def get_due_date(string)
   begin
     string = get_meta(string)
-    puts("parsing date: #{string}")
-    date = Date.parse(string)
+    date = nil
+    if (string =~ /tomorrow/i)
+      date = Date.today + 1
+    else
+      date = Date.parse(string) rescue Date.today
+    end
+
     date += (date < Date.today) ? 7 : 0
     time = Time.parse(string)
-    return "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
+    formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
+    return formatted
   rescue
     return "7:00 PM"
   end
@@ -25,14 +31,12 @@ end
 
 def get_context(string)
   string = get_meta(string)
-  project = /\#(\w+)/.match(string).captures[0] rescue "online"
+  project = /[#:](\w+)/.match(string).captures[0] rescue "online"
   return project
 end  
 
 def get_meta(string)
-  puts("string: #{string}")
   meta = string.gsub(/^.*?(\/\/|$)/, "")
-  puts("meta: #{meta}")
   return meta
 end
 
@@ -54,5 +58,5 @@ puts "due date: #{due_date}"
 puts "task    : #{task_name}"
 puts "HOME: "
 
-#puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
+puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
 
