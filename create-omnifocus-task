@@ -31,7 +31,7 @@ end
 
 def get_context(string)
   string = get_meta(string)
-  project = /[#:](\w+)/.match(string).captures[0] rescue "online"
+  project = /[#](\w+)/.match(string).captures[0] rescue "online"
   return project
 end  
 
