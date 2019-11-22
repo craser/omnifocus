@@ -15,7 +15,7 @@ def get_due_date(string)
     end
 
     date += (date < Date.today) ? 7 : 0
-    time = Time.parse(string)
+    time = Time.parse(string) rescue Time.parse("7:00 PM")
     formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
     return formatted
   rescue
