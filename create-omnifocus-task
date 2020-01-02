@@ -10,7 +10,16 @@ def get_due_date(string)
     date = nil
     if (string =~ /tomorrow/i)
       date = Date.today + 1
+    elsif (string =~ /\d{1,2}\/\d{1,2}(\/\d\d(\d\d)?)?/)
+      line = string.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)
+      month = line[1]
+      day = line[2]
+      year = line[4] || Date.today.year
+      dateString = "#{year}-#{month}-#{day}"
+      puts "parsing #{date} as date"
+      date = Date.parse(dateString) rescue Date.today
     else
+      puts "parsing #{string} as date"
       date = Date.parse(string) rescue Date.today
     end
 
