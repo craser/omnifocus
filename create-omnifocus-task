@@ -7,29 +7,41 @@ require 'time'
 def get_due_date(string)
   begin
     string = get_meta(string)
-    date = nil
-    if (string =~ /tomorrow/i)
-      date = Date.today + 1
-    elsif (string =~ /\d{1,2}\/\d{1,2}(\/\d\d(\d\d)?)?/)
-      line = string.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)
-      month = line[1]
-      day = line[2]
-      year = line[4] || Date.today.year
-      dateString = "#{year}-#{month}-#{day}"
-      puts "parsing #{date} as date"
-      date = Date.parse(dateString) rescue Date.today
+    date = parse_date(string)
+    if (date) 
+      time = Time.parse(string) rescue Time.parse("7:00 PM")
+      formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
+      return formatted
     else
-      puts "parsing #{string} as date"
-      date = Date.parse(string) rescue Date.today
+      return ""
     end
-
-    date += (date < Date.today) ? 7 : 0
-    time = Time.parse(string) rescue Time.parse("7:00 PM")
-    formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
-    return formatted
   rescue
     return "7:00 PM"
   end
+end
+
+def parse_date(string)
+  date = nil
+  if (string =~ /tomorrow/i)
+    date = Date.today + 1
+  elsif (string =~ /\d{1,2}\/\d{1,2}(\/\d\d(\d\d)?)?/)
+    line = string.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)
+    month = line[1]
+    day = line[2]
+    year = line[4] || Date.today.year
+    dateString = "#{year}-#{month}-#{day}"
+    puts "parsing #{date} as date"
+    date = Date.parse(dateString) rescue Date.today
+  elsif (get_context(string) =~ /scrum/i)
+    puts "parsing #{string} as scrum date"
+    date = Date.parse(string) rescue nil
+  else
+    puts "parsing #{string} as non-scrum date"
+    puts "context: #{get_context(string)}"
+    date = Date.parse(string) rescue Date.today
+  end
+  date += (date < Date.today) ? 7 : 0
+  return date    
 end
 
 def get_project(string)
