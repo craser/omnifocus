@@ -17,10 +17,20 @@ function getMeta(string) {
  */
 function parseDate(meta) {
     try {
-        // TODO: Parse days of week.
         if (/tomorrow/i.test(meta)) {
             var date = new Date();
             date.setDate(date.getDate() + 1);
+            return date;
+        } else if (hasDayOfWeek(meta)) {
+            // Written while sleepy. Beware.
+            var match = meta.match(/(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i);
+            var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            var day = match[0].toLowerCase();
+            var index = days.indexOf(day);
+            var current = new Date().getDay()
+            var offset = (index + 7 - current) % 7;
+            var date = new Date();
+            date.setDate(date.getDate() + offset);
             return date;
         } else {
             var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
@@ -34,8 +44,14 @@ function parseDate(meta) {
             return date;            
         } 
     } catch (e) {
+        console.log(e);
         return new Date();
     }
+}
+
+function hasDayOfWeek(meta) {
+    var match = meta.match(/(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i);
+    return !!match;
 }
 
 /**
