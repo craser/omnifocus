@@ -1,85 +1,214 @@
-#!/usr/bin/ruby
+#!/usr/bin/env osascript -l JavaScript
 
-require 'date'
-require 'time'
+const DAYS_OF_WEEK = [
+    new DayOfWeek('sunday', /(sun|sunday)/i, 0),
+    new DayOfWeek('monday', /(mon|monday)/i, 1),
+    new DayOfWeek('tuesday', /(tues|tuesday)/i, 2),
+    new DayOfWeek('wednesday', /(wed|wednesday)/i, 3),
+    new DayOfWeek('thursday', /(thr|thrs|thurs|thursday)/i, 4),
+    new DayOfWeek('friday', /(fri|friday)/i, 5),
+    new DayOfWeek('saturday', /(sat|saturday)/i, 6),
+];
 
-# TODO: Parse "7 days"
-def get_due_date(string)
-  begin
-    string = get_meta(string)
-    date = parse_date(string)
-    if (date)
-      time_string = string.match(/\d{1,2}(:\d\d)?(am|pm)/);
-      time = Time.parse(time_string.to_s) rescue Time.parse("7:00 PM")
-      formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
-      return formatted
-    else
-      return ""
-    end
-  rescue
-    return "7:00 PM"
-  end
-end
+function DayOfWeek(name, pattern, index) {
+    this.name = name;
+    this.pattern = pattern;
+    this.index = index;
+}
 
-def parse_date(string)
-  date = nil
-  if (string =~ /tomorrow/i)
-    date = Date.today + 1
-  elsif (string =~ /\d{1,2}\/\d{1,2}(\/\d\d(\d\d)?)?/)
-    line = string.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)
-    month = line[1]
-    day = line[2]
-    year = line[4] || Date.today.year
-    dateString = "#{year}-#{month}-#{day}"
-    puts "parsing #{dateString} as date"
-    date = Date.parse(dateString) rescue Date.today
-  elsif (get_tags(string).include?("scrum"))
-    puts "parsing #{string} as scrum date"
-    date = Date.parse(string) rescue nil
-  else
-    puts "parsing #{string} as non-scrum date"
-    puts "context: #{get_tags(string)}"
-    date = Date.parse(string) rescue Date.today
-  end
-  date += (date < Date.today) ? 7 : 0
-  return date    
-end
+function parseDayOfWeek(meta) {
+    var date = new Date();
+    DAYS_OF_WEEK.forEach(function (day) {
+        if (day.pattern.test(meta)) {
+            var current = new Date().getDay()
+            var offset = (day.index + 7 - current) % 7;
+            date.setDate(date.getDate() + offset);
+        }
+    });
+    console.log(`day of week (${meta}): ${date}`);
+    return date;
+}
 
-def get_project(string)
-  string = get_meta(string)
-  project = /\.(\w+)/.match(string).captures[0] rescue "work"
-  return project
-end
+/**
+ * Retrieves a Date object from the given metadata string.
+ * @param meta
+ * @returns {Date} Formatted date. (ex: 01/14/2021)
+ */
+function parseDate(meta) {
+    try {
+        if (/tomorrow/i.test(meta)) {
+            var date = new Date();
+            date.setDate(date.getDate() + 1);
+            return date;
+        } else if (hasDayOfWeek(meta)) {
+            console.log('foo');
+            var date = parseDayOfWeek(meta);
+            console.log(`parsed day of week: ${date}`);
+            return date;
+        } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
+            var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
+            var month = line[1];
+            var day = line[2];
+            var year = line[4] || new Date().getFullYear();
+            var date = new Date();
+            date.setMonth(parseInt(month) - 1);
+            date.setDate(day);
+            date.setFullYear(year);
+            return date;            
+        } else {
+            return new Date();
+        }
+    } catch (e) {
+        console.log(e);
+        return new Date();
+    }
+}
 
-def get_tags(string)
-  string = get_meta(string)
-  tags = string.scan(/(\W|^)[#:](\w+)/).map do |m|
-    m[1]
-  end
-  return tags
-end  
+function hasDayOfWeek(meta) {
+    try {
+        var found = DAYS_OF_WEEK.find(function (day) {
+            console.log(`testing day (${day.name}): ${meta}`);
+            return day.pattern.test(meta);
+        });
+        console.log(`found: ${!!found}`);
+        return !!found;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }    
+}
 
-def get_meta(string)
-  meta = string.gsub(/^.*?(\/\/|$)/, "")
-  return meta
-end
+/**
+ * Retrieves a time string from the given metadata string.
+ * @param meta
+ * @returns {string} Formatted time string (ex: '4:33 PM')
+ */
+function parseTime(meta) {
+    var match = meta.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);
+    if (match) {
+        var offset = /pm/i.test(match[4]) ? 12 : 0;
+        var hours = (parseInt(match[1]) %12) + offset;
+        var minutes = match[3] ? parseInt(match[3]) : 0;
+        return {
+            hours: hours,
+            minutes: minutes,
+            seconds: 0
+        };
+    } else {
+        return null;
+    }    
+}
 
-def get_task_name(string)
-  string = string.gsub(/\/\/.*$/, "")
-  return string;
-end
-      
-command = ARGV.join(" ")
-project = get_project(command)
-tags = get_tags(command)
-task_name = get_task_name(command)
-due_date = get_due_date(command)
-      
+function parseDueDate(string) {
+    try {
+        var meta = getMeta(string);
+        var date = parseDate(meta);
+        var time = parseTime(meta);
+        if (time) {
+            date.setHours(time.hours, time.minutes, time.seconds);
+        } else {
+            date.setHours(19, 0, 0); // 07:00 PM
+        }
+        return date;
+    } catch (e) {
+        console.log(e);
+        var date = new Date();
+        date.setHours(19, 0, 0); // 07:00 PM
+        return date;
+    }
+}
 
-puts "project : #{project}"
-puts "tags : #{tags}"
-puts "due date: #{due_date}"
-puts "task    : #{task_name}"
+function getProject(OmniFocus, prjName) {
+    try {
+        console.log(`getting project: ${prjName}`);
+        var projects = OmniFocus.defaultDocument.projects.whose({ name: { _beginsWith: prjName } });
+        var project = projects.length ? projects[0] : null;
+        return project;
+    } catch (e) {
+        console.log(`no project found for name: ${prjName}`);
+        return null;
+    }
+}
 
-puts `osascript #{__dir__}/CreateTask.scpt "#{tags[0]}" "#{project}" "#{task_name}" "#{due_date}"` # FIXME: only passes first tag
+function getTag(OmniFocus, tagName) {
+    try {
+        console.log(`getting tag: ${tagName}`);
+        var tags = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName } });
+        var tag = tags[0];
+        console.log(`found tag: ${tag.name()}`);
+        return tag;
+    } catch (e) {
+        console.log(`no tag found for name: ${tagName}`)
+        return null;
+    }
+}
 
+function parseTaskName(string) {
+    var name = string.replace(/\/\/.*$/, '');
+    return name;
+}
+
+/**
+ * Retrieves the metadata portaion (everything after the '//') from the input string.
+ * @param string
+ * @returns {*}
+ */
+function getMeta(string) {
+    var meta = string.replace(/^.*?(\/\/|$)/, "");
+    return meta;
+}
+
+function getTagNames(string) {
+    var tags = [];
+    var meta = getMeta(string);
+    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) { 
+        tags.push(t);
+    });
+    return tags;
+}
+
+function getPrimaryTagName(string) {
+    var tagNames = getTagNames(string);
+    return tagNames.length ? tagNames[0] : null;
+}
+
+function parsePrimaryTag(OmniFocus, string) {
+    var name = getPrimaryTagName(string);
+    var tag = getTag(OmniFocus, name);
+    return tag;
+}
+
+function parseProject(OmniFocus, string) {
+    var meta = getMeta(string);
+    var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
+    var project = getProject(OmniFocus, projectName);
+    if (!project) {
+        project = getProject(OmniFocus, 'work');
+    }
+    return project;    
+}
+
+function run(argv) {
+    try {
+        var string = argv[0];
+        var OmniFocus = Application('OmniFocus');
+        var project = parseProject(OmniFocus, string);
+        let taskName = parseTaskName(string);
+        let primaryTag = parsePrimaryTag(OmniFocus, string);
+        let dueDate = parseDueDate(string);
+
+        console.log(`task    : ${taskName}`);
+        console.log(`project : ${project.name()}`);
+        console.log(`due     : ${dueDate}`);
+        
+        project.tasks.push(OmniFocus.Task({
+            name: taskName,
+            primaryTag: primaryTag,
+            dueDate: dueDate
+        }));
+
+        console.log('COMPLETE');
+    } catch (e) {
+        console.log(e);
+    }
+}
