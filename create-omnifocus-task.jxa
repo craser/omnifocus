@@ -1,13 +1,32 @@
 #!/usr/bin/env osascript -l JavaScript
 
-/**
- * Retrieves the metadata portaion (everything after the '//') from the input string.
- * @param string
- * @returns {*}
- */
-function getMeta(string) {
-    var meta = string.replace(/^.*?(\/\/|$)/, "");
-    return meta;
+const DAYS_OF_WEEK = [
+    new DayOfWeek('sunday', /(sun|sunday)/i, 0),
+    new DayOfWeek('monday', /(mon|monday)/i, 1),
+    new DayOfWeek('tuesday', /(tues|tuesday)/i, 2),
+    new DayOfWeek('wednesday', /(wed|wednesday)/i, 3),
+    new DayOfWeek('thursday', /(thr|thrs|thurs|thursday)/i, 4),
+    new DayOfWeek('friday', /(fri|friday)/i, 5),
+    new DayOfWeek('saturday', /(sat|saturday)/i, 6),
+];
+
+function DayOfWeek(name, pattern, index) {
+    this.name = name;
+    this.pattern = pattern;
+    this.index = index;
+}
+
+function parseDayOfWeek(meta) {
+    var date = new Date();
+    DAYS_OF_WEEK.forEach(function (day) {
+        if (day.pattern.test(meta)) {
+            var current = new Date().getDay()
+            var offset = (day.index + 7 - current) % 7;
+            date.setDate(date.getDate() + offset);
+        }
+    });
+    console.log(`day of week (${meta}): ${date}`);
+    return date;
 }
 
 /**
@@ -17,22 +36,17 @@ function getMeta(string) {
  */
 function parseDate(meta) {
     try {
+        debugger;
         if (/tomorrow/i.test(meta)) {
             var date = new Date();
             date.setDate(date.getDate() + 1);
             return date;
         } else if (hasDayOfWeek(meta)) {
-            // Written while sleepy. Beware.
-            var match = meta.match(/(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i);
-            var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-            var day = match[0].toLowerCase();
-            var index = days.indexOf(day);
-            var current = new Date().getDay()
-            var offset = (index + 7 - current) % 7;
-            var date = new Date();
-            date.setDate(date.getDate() + offset);
+            console.log('foo');
+            var date = parseDayOfWeek(meta);
+            console.log(`parsed day of week: ${date}`);
             return date;
-        } else {
+        } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
             var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
             var month = line[1];
             var day = line[2];
@@ -42,7 +56,9 @@ function parseDate(meta) {
             date.setDate(day);
             date.setFullYear(year);
             return date;            
-        } 
+        } else {
+            return new Date();
+        }
     } catch (e) {
         console.log(e);
         return new Date();
@@ -50,8 +66,17 @@ function parseDate(meta) {
 }
 
 function hasDayOfWeek(meta) {
-    var match = meta.match(/(sunday|monday|tuesday|wednesday|thursday|friday|saturday)/i);
-    return !!match;
+    try {
+        var found = DAYS_OF_WEEK.find(function (day) {
+            console.log(`testing day (${day.name}): ${meta}`);
+            return day.pattern.test(meta);
+        });
+        console.log(`found: ${!!found}`);
+        return !!found;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }    
 }
 
 /**
@@ -81,11 +106,15 @@ function parseDueDate(string) {
         var time = parseTime(meta);
         if (time) {
             date.setHours(time.hours, time.minutes);
+        } else {
+            date.setHours(19, 0, 0); // 07:00 PM
         }
         return date;
     } catch (e) {
         console.log(e);
-        return new Date();
+        var date = new Date();
+        date.setHours(19, 0, 0); // 07:00 PM
+        return date;
     }
 }
 
@@ -93,7 +122,7 @@ function getProject(OmniFocus, prjName) {
     try {
         console.log(`getting project: ${prjName}`);
         var projects = OmniFocus.defaultDocument.projects.whose({ name: { _beginsWith: prjName } });
-        var project = projects[0];
+        var project = projects.length ? projects[0] : null;
         return project;
     } catch (e) {
         console.log(`no project found for name: ${prjName}`);
@@ -117,6 +146,16 @@ function getTag(OmniFocus, tagName) {
 function parseTaskName(string) {
     var name = string.replace(/\/\/.*$/, '');
     return name;
+}
+
+/**
+ * Retrieves the metadata portaion (everything after the '//') from the input string.
+ * @param string
+ * @returns {*}
+ */
+function getMeta(string) {
+    var meta = string.replace(/^.*?(\/\/|$)/, "");
+    return meta;
 }
 
 function getTagNames(string) {
@@ -143,6 +182,9 @@ function parseProject(OmniFocus, string) {
     var meta = getMeta(string);
     var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
     var project = getProject(OmniFocus, projectName);
+    if (!project) {
+        project = getProject(OmniFocus, 'work');
+    }
     return project;    
 }
 
@@ -151,10 +193,13 @@ function run(argv) {
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
         var project = parseProject(OmniFocus, string);
+        let taskName = parseTaskName(string);
+        let primaryTag = parsePrimaryTag(OmniFocus, string);
+        let dueDate = parseDueDate(string);
         project.tasks.push(OmniFocus.Task({
-            name: parseTaskName(string),
-            primaryTag: parsePrimaryTag(OmniFocus, string),
-            dueDate: parseDueDate(string)
+            name: taskName,
+            primaryTag: primaryTag,
+            dueDate: dueDate
         }));
 
         console.log('COMPLETE');
