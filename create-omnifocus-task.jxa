@@ -1,0 +1,148 @@
+#!/usr/bin/env osascript -l JavaScript
+
+/**
+ * Retrieves the metadata portaion (everything after the '//') from the input string.
+ * @param string
+ * @returns {*}
+ */
+function getMeta(string) {
+    var meta = string.replace(/^.*?(\/\/|$)/, "");
+    return meta;
+}
+
+/**
+ * Retrieves a Date object from the given metadata string.
+ * @param meta
+ * @returns {Date} Formatted date. (ex: 01/14/2021)
+ */
+function parseDate(meta) {
+    try {
+        // TODO: Parse days of week.
+        if (/tomorrow/i.test(meta)) {
+            var date = new Date();
+            date.setDate(date.getDate() + 1);
+            return date;
+        } else {
+            var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
+            var month = line[1];
+            var day = line[2];
+            var year = line[4] || new Date().getFullYear();
+            var date = new Date();
+            date.setMonth(parseInt(month) - 1);
+            date.setDate(day);
+            date.setFullYear(year);
+            return date;            
+        } 
+    } catch (e) {
+        return new Date();
+    }
+}
+
+/**
+ * Retrieves a time string from the given metadata string.
+ * @param meta
+ * @returns {string} Formatted time string (ex: '4:33 PM')
+ */
+function parseTime(meta) {
+    var match = meta.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);
+    if (match) {
+        var offset = /pm/i.test(match[4]) ? 12 : 0;
+        var hours = parseInt(match[1]) + offset;
+        var minutes = match[2] ? parseInt(match[2]) : 0;
+        return {
+            hours: hours,
+            minutes: minutes
+        };
+    } else {
+        return null;
+    }    
+}
+
+function parseDueDate(string) {
+    try {
+        var meta = getMeta(string);
+        var date = parseDate(meta);
+        var time = parseTime(meta);
+        if (time) {
+            date.setHours(time.hours, time.minutes);
+        }
+        return date;
+    } catch (e) {
+        console.log(e);
+        return new Date();
+    }
+}
+
+function getProject(OmniFocus, prjName) {
+    try {
+        console.log(`getting project: ${prjName}`);
+        var projects = OmniFocus.defaultDocument.projects.whose({ name: { _beginsWith: prjName } });
+        var project = projects[0];
+        return project;
+    } catch (e) {
+        console.log(`no project found for name: ${prjName}`);
+        return null;
+    }
+}
+
+function getTag(OmniFocus, tagName) {
+    try {
+        console.log(`getting tag: ${tagName}`);
+        var tags = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName } });
+        var tag = tags[0];
+        console.log(`found tag: ${tag.name()}`);
+        return tag;
+    } catch (e) {
+        console.log(`no tag found for name: ${tagName}`)
+        return null;
+    }
+}
+
+function parseTaskName(string) {
+    var name = string.replace(/\/\/.*$/, '');
+    return name;
+}
+
+function getTagNames(string) {
+    var tags = [];
+    var meta = getMeta(string);
+    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) { 
+        tags.push(t);
+    });
+    return tags;
+}
+
+function getPrimaryTagName(string) {
+    var tagNames = getTagNames(string);
+    return tagNames.length ? tagNames[0] : null;
+}
+
+function parsePrimaryTag(OmniFocus, string) {
+    var name = getPrimaryTagName(string);
+    var tag = getTag(OmniFocus, name);
+    return tag;
+}
+
+function parseProject(OmniFocus, string) {
+    var meta = getMeta(string);
+    var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
+    var project = getProject(OmniFocus, projectName);
+    return project;    
+}
+
+function run(argv) {
+    try {
+        var string = argv[0];
+        var OmniFocus = Application('OmniFocus');
+        var project = parseProject(OmniFocus, string);
+        project.tasks.push(OmniFocus.Task({
+            name: parseTaskName(string),
+            primaryTag: parsePrimaryTag(OmniFocus, string),
+            dueDate: parseDueDate(string)
+        }));
+
+        console.log('COMPLETE');
+    } catch (e) {
+        console.log(e);
+    }
+}

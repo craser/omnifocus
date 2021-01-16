@@ -8,8 +8,9 @@ def get_due_date(string)
   begin
     string = get_meta(string)
     date = parse_date(string)
-    if (date) 
-      time = Time.parse(string) rescue Time.parse("7:00 PM")
+    if (date)
+      time_string = string.match(/\d{1,2}(:\d\d)?(am|pm)/);
+      time = Time.parse(time_string.to_s) rescue Time.parse("7:00 PM")
       formatted = "#{date.strftime("%m/%d/%Y")} #{time.strftime("%I:%M %p")}"
       return formatted
     else
@@ -30,14 +31,14 @@ def parse_date(string)
     day = line[2]
     year = line[4] || Date.today.year
     dateString = "#{year}-#{month}-#{day}"
-    puts "parsing #{date} as date"
+    puts "parsing #{dateString} as date"
     date = Date.parse(dateString) rescue Date.today
-  elsif (get_context(string) =~ /scrum/i)
+  elsif (get_tags(string).include?("scrum"))
     puts "parsing #{string} as scrum date"
     date = Date.parse(string) rescue nil
   else
     puts "parsing #{string} as non-scrum date"
-    puts "context: #{get_context(string)}"
+    puts "context: #{get_tags(string)}"
     date = Date.parse(string) rescue Date.today
   end
   date += (date < Date.today) ? 7 : 0
@@ -50,10 +51,12 @@ def get_project(string)
   return project
 end
 
-def get_context(string)
+def get_tags(string)
   string = get_meta(string)
-  project = /(\W|^)[#:](\w+)/.match(string).captures[1] rescue "online"
-  return project
+  tags = string.scan(/(\W|^)[#:](\w+)/).map do |m|
+    m[1]
+  end
+  return tags
 end  
 
 def get_meta(string)
@@ -68,16 +71,15 @@ end
       
 command = ARGV.join(" ")
 project = get_project(command)
-context = get_context(command)
+tags = get_tags(command)
 task_name = get_task_name(command)
 due_date = get_due_date(command)
       
 
 puts "project : #{project}"
-puts "context : #{context}"
+puts "tags : #{tags}"
 puts "due date: #{due_date}"
 puts "task    : #{task_name}"
-puts "HOME: "
 
-puts `osascript #{__dir__}/CreateTask.scpt "#{context}" "#{project}" "#{task_name}" "#{due_date}"`
+puts `osascript #{__dir__}/CreateTask.scpt "#{tags[0]}" "#{project}" "#{task_name}" "#{due_date}"` # FIXME: only passes first tag
 
