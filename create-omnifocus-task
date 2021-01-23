@@ -1,5 +1,7 @@
 #!/usr/bin/env osascript -l JavaScript
 
+const DEFAULT_PROJECT = 'work';
+
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
     new DayOfWeek('monday', /(mon|monday)/i, 1),
@@ -25,7 +27,6 @@ function parseDayOfWeek(meta) {
             date.setDate(date.getDate() + offset);
         }
     });
-    console.log(`day of week (${meta}): ${date}`);
     return date;
 }
 
@@ -41,9 +42,7 @@ function parseDate(meta) {
             date.setDate(date.getDate() + 1);
             return date;
         } else if (hasDayOfWeek(meta)) {
-            console.log('foo');
             var date = parseDayOfWeek(meta);
-            console.log(`parsed day of week: ${date}`);
             return date;
         } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
             var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
@@ -59,7 +58,6 @@ function parseDate(meta) {
             return new Date();
         }
     } catch (e) {
-        console.log(e);
         return new Date();
     }
 }
@@ -67,13 +65,10 @@ function parseDate(meta) {
 function hasDayOfWeek(meta) {
     try {
         var found = DAYS_OF_WEEK.find(function (day) {
-            console.log(`testing day (${day.name}): ${meta}`);
             return day.pattern.test(meta);
         });
-        console.log(`found: ${!!found}`);
         return !!found;
     } catch (e) {
-        console.log(e);
         return false;
     }    
 }
@@ -99,6 +94,12 @@ function parseTime(meta) {
     }    
 }
 
+function getDefaultDueDate() {
+    var date = new Date();
+    date.setHours(19, 0, 0); // 07:00 PM
+    return date;
+}
+
 function parseDueDate(string) {
     try {
         var meta = getMeta(string);
@@ -107,38 +108,31 @@ function parseDueDate(string) {
         if (time) {
             date.setHours(time.hours, time.minutes, time.seconds);
         } else {
-            date.setHours(19, 0, 0); // 07:00 PM
+            date.setHours(19, 0, 0); // 07:00 PM // TODO: Pull h, m, s from getDefaultDate().
         }
         return date;
     } catch (e) {
-        console.log(e);
-        var date = new Date();
-        date.setHours(19, 0, 0); // 07:00 PM
+        var date = getDefaultDueDate();
         return date;
     }
 }
 
 function getProject(OmniFocus, prjName) {
     try {
-        console.log(`getting project: ${prjName}`);
         var projects = OmniFocus.defaultDocument.projects.whose({ name: { _beginsWith: prjName } });
         var project = projects.length ? projects[0] : null;
         return project;
     } catch (e) {
-        console.log(`no project found for name: ${prjName}`);
         return null;
     }
 }
 
 function getTag(OmniFocus, tagName) {
     try {
-        console.log(`getting tag: ${tagName}`);
         var tags = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName } });
-        var tag = tags[0];
-        console.log(`found tag: ${tag.name()}`);
+        var tag = tags[0]();
         return tag;
     } catch (e) {
-        console.log(`no tag found for name: ${tagName}`)
         return null;
     }
 }
@@ -183,7 +177,7 @@ function parseProject(OmniFocus, string) {
     var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
     var project = getProject(OmniFocus, projectName);
     if (!project) {
-        project = getProject(OmniFocus, 'work');
+        project = getProject(OmniFocus, DEFAULT_PROJECT);
     }
     return project;    
 }
@@ -193,21 +187,16 @@ function run(argv) {
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
         var project = parseProject(OmniFocus, string);
-        let taskName = parseTaskName(string);
-        let primaryTag = parsePrimaryTag(OmniFocus, string);
-        let dueDate = parseDueDate(string);
+        var taskName = parseTaskName(string);
+        var primaryTag = parsePrimaryTag(OmniFocus, string);
+        var dueDate = parseDueDate(string);
 
-        console.log(`task    : ${taskName}`);
-        console.log(`project : ${project.name()}`);
-        console.log(`due     : ${dueDate}`);
-        
         project.tasks.push(OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
-            dueDate: dueDate
+            dueDate: dueDate,
+            note: string
         }));
-
-        console.log('COMPLETE');
     } catch (e) {
         console.log(e);
     }
