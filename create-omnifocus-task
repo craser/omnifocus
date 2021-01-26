@@ -154,6 +154,12 @@ function getMeta(string) {
 
 function getTagNames(string) {
     var tags = [];
+    
+    var taskName = parseTaskName(string);
+    if (/expect/i.test(taskName)) {
+        tags.push('waiting');
+    }
+    
     var meta = getMeta(string);
     meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) { 
         tags.push(t);
@@ -182,6 +188,18 @@ function parseProject(OmniFocus, string) {
     return project;    
 }
 
+function parseTags(OmniFocus, string) {
+    var tags = [];
+    var tagNames = getTagNames(string);
+    tagNames.forEach(function (tagName) {
+        var found = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName }});
+        if (found.length) {
+            tags.push(found()[0]);
+        }
+    });    
+    return tags;
+}
+
 function run(argv) {
     try {
         var string = argv[0];
@@ -189,14 +207,19 @@ function run(argv) {
         var project = parseProject(OmniFocus, string);
         var taskName = parseTaskName(string);
         var primaryTag = parsePrimaryTag(OmniFocus, string);
+        var tags = parseTags(OmniFocus, string);
         var dueDate = parseDueDate(string);
 
-        project.tasks.push(OmniFocus.Task({
+        var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
             dueDate: dueDate,
             note: string
-        }));
+        });
+        project.tasks.push(task);
+
+        OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
+        
     } catch (e) {
         console.log(e);
     }
