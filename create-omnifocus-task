@@ -37,7 +37,13 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/tomorrow/i.test(meta)) {
+        if (/\d+days?/i.test(meta)) {
+            var line = meta.match(/(\d+)days?/i);
+            var days = parseInt(line[1]);
+            var date = new Date();
+            date.setDate(date.getDate() + days);
+            return date;
+        } else if (/tomorrow/i.test(meta)) {
             var date = new Date();
             date.setDate(date.getDate() + 1);
             return date;
@@ -53,6 +59,7 @@ function parseDate(meta) {
             date.setMonth(parseInt(month) - 1);
             date.setDate(day);
             date.setFullYear(year);
+            date.setHours(19, 0, 0); // 07:00 PM // TODO: Pull h, m, s from getDefaultDate().
             return date;            
         } else {
             return new Date();
@@ -200,8 +207,26 @@ function parseTags(OmniFocus, string) {
     return tags;
 }
 
+function logTaskData(name, project, primaryTag, tags, dueDate) {
+    try {
+        console.log(`name    : ${name}`);
+        console.log(`due     : ${dueDate}`);
+        console.log(`project : ${project.name()}`);
+        console.log(`primary : ${primaryTag.name}`);
+        console.log(`tags (${tags.length}) :`);
+        tags.forEach(function (tag, i) {
+            console.log(`  [${i}]: ${tag.name}`);
+        });
+    } catch (e) {
+        console.log(`error logging info: ${e}`);
+    }
+}
+
 function run(argv) {
     try {
+        console.log('################################################################################');
+        console.log(`creating new task: ${new Date()}`);
+        console.log(`input: "${argv[0]}"`);
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
         var project = parseProject(OmniFocus, string);
@@ -209,7 +234,9 @@ function run(argv) {
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
         var dueDate = parseDueDate(string);
-
+       
+        logTaskData(taskName, project, primaryTag, tags, dueDate);
+        
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
@@ -217,10 +244,10 @@ function run(argv) {
             note: string
         });
         project.tasks.push(task);
-
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
-        
+        console.log('task created');        
     } catch (e) {
+        console.log(`error creating task: ${e}`);
         console.log(e);
     }
 }

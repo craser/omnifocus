@@ -36,6 +36,7 @@ your task info (task info syntax below) in the box and hit *RETURN* to create th
   * *tomorrow*
   * a day of the week (can be abbreviated): *Monday*, or *mon*
   * a date with optional year: 7/22 or 7/22/2021
+  * a number of days, specified as Nday or Ndays (ex: 5days)
   * if not specified, defaults to *today*
 * Time can be *one* of the following (note that *am* or *pm* is *required*):
   * Hpm (ex: 4pm)
