@@ -187,7 +187,7 @@ function parsePrimaryTag(OmniFocus, string) {
 
 function parseProject(OmniFocus, string) {
     var meta = getMeta(string);
-    var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
+    var projectName = meta.replace(/^.*\.(\w+)\b.*$/, '$1');
     var project = getProject(OmniFocus, projectName);
     if (!project) {
         project = getProject(OmniFocus, DEFAULT_PROJECT);
