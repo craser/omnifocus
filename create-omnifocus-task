@@ -195,6 +195,12 @@ function parseProject(OmniFocus, string) {
     return project;    
 }
 
+function parseIsDone(string) {
+    var meta = getMeta(string);
+    var isDone = /\bdone\b/i.test(meta);
+    return isDone;
+}
+
 function parseTags(OmniFocus, string) {
     var tags = [];
     var tagNames = getTagNames(string);
@@ -234,6 +240,7 @@ function run(argv) {
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
         var dueDate = parseDueDate(string);
+        var done = parseIsDone(string);
        
         logTaskData(taskName, project, primaryTag, tags, dueDate);
         
@@ -241,7 +248,9 @@ function run(argv) {
             name: taskName,
             primaryTag: primaryTag,
             dueDate: dueDate,
-            note: string
+            note: string,
+            completed: done,
+            completionDate: (done ? new Date() : null);
         });
         project.tasks.push(task);
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.

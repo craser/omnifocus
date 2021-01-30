@@ -1,6 +1,6 @@
 #!/usr/bin/env osascript -l JavaScript
 
-const DEFAULT_PROJECT = 'work';
+const WORK_PROJECT = 'work';
 
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
@@ -37,7 +37,13 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/\d+days?/i.test(meta)) {
+        if (/\d+ago/i.test(meta)) {
+            var line = meta.match(/(\d+)ago/i);
+            var days = parseInt(line[1]);
+            var date = new Date();
+            date.setDate(date.getDate() - days);
+            return date;
+        } else if (/\d+days?/i.test(meta)) {
             var line = meta.match(/(\d+)days?/i);
             var days = parseInt(line[1]);
             var date = new Date();
@@ -107,9 +113,8 @@ function getDefaultDueDate() {
     return date;
 }
 
-function parseDueDate(string) {
+function parseDueDate(meta) {
     try {
-        var meta = getMeta(string);
         var date = parseDate(meta);
         var time = parseTime(meta);
         if (time) {
@@ -145,7 +150,7 @@ function getTag(OmniFocus, tagName) {
 }
 
 function parseTaskName(string) {
-    var name = string.replace(/\/\/.*$/, '');
+    var name = string.replace(/\s*\/\/.*$/, '');
     return name;
 }
 
@@ -159,93 +164,68 @@ function getMeta(string) {
     return meta;
 }
 
-function getTagNames(string) {
+function parseTagNames(OmniFocus, meta) {
     var tags = [];
-    
-    var taskName = parseTaskName(string);
-    if (/expect/i.test(taskName)) {
-        tags.push('waiting');
-    }
-    
-    var meta = getMeta(string);
-    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) { 
-        tags.push(t);
+    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) {
+        var tag = getTag(OmniFocus, t);
+        tags.push(tag.name());
     });
     return tags;
 }
 
-function getPrimaryTagName(string) {
-    var tagNames = getTagNames(string);
-    return tagNames.length ? tagNames[0] : null;
-}
-
-function parsePrimaryTag(OmniFocus, string) {
-    var name = getPrimaryTagName(string);
-    var tag = getTag(OmniFocus, name);
-    return tag;
-}
-
-function parseProject(OmniFocus, string) {
-    var meta = getMeta(string);
-    var projectName = meta.replace(/^.*\.(\w+)\W.*$/, '$1');
+function parseProject(OmniFocus, meta) {
+    var projectName = meta.replace(/^.*\.(\w+)\b.*$/, '$1');
     var project = getProject(OmniFocus, projectName);
-    if (!project) {
-        project = getProject(OmniFocus, DEFAULT_PROJECT);
-    }
     return project;    
 }
 
-function parseTags(OmniFocus, string) {
-    var tags = [];
-    var tagNames = getTagNames(string);
-    tagNames.forEach(function (tagName) {
-        var found = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName }});
-        if (found.length) {
-            tags.push(found()[0]);
-        }
-    });    
-    return tags;
+function sameDay(a, b) {
+    return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
 }
 
-function logTaskData(name, project, primaryTag, tags, dueDate) {
-    try {
-        console.log(`name    : ${name}`);
-        console.log(`due     : ${dueDate}`);
-        console.log(`project : ${project.name()}`);
-        console.log(`primary : ${primaryTag.name}`);
-        console.log(`tags (${tags.length}) :`);
-        tags.forEach(function (tag, i) {
-            console.log(`  [${i}]: ${tag.name}`);
-        });
-    } catch (e) {
-        console.log(`error logging info: ${e}`);
+function formatHeader(project, date) {
+    return `${project.name()} Log for ${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+}
+
+function matchesTags(task, tagNames) {
+    if (!tagNames || tagNames.length == 0) {
+        return true;
+    } else {
+        var found = false;
+        task.tags().map(function (tag) {
+            found = found || (tagNames.indexOf(tag.name()) >= 0);
+        })
+        return found;
     }
+}
+
+function taskMatches(task, dueDate, tagNames) {
+    var completionDate = task.completionDate();
+    return !!completionDate 
+        && sameDay(dueDate, completionDate) 
+        && matchesTags(task, tagNames);    
 }
 
 function run(argv) {
     try {
-        console.log('################################################################################');
-        console.log(`creating new task: ${new Date()}`);
-        console.log(`input: "${argv[0]}"`);
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
-        var project = parseProject(OmniFocus, string);
-        var taskName = parseTaskName(string);
-        var primaryTag = parsePrimaryTag(OmniFocus, string);
-        var tags = parseTags(OmniFocus, string);
-        var dueDate = parseDueDate(string);
+        var bullet = parseTaskName(string);
+        var meta = getMeta(string);
+        var project = parseProject(OmniFocus, meta);
+        var dueDate = parseDueDate(meta);
+        var tagNames = parseTagNames(OmniFocus, meta);
        
-        logTaskData(taskName, project, primaryTag, tags, dueDate);
-        
-        var task = OmniFocus.Task({
-            name: taskName,
-            primaryTag: primaryTag,
-            dueDate: dueDate,
-            note: string
+        console.log(formatHeader(project, dueDate));
+        project.tasks().map(function (task, i) {
+            if (taskMatches(task, dueDate, tagNames)) {
+                console.log(`  ${bullet} ${task.name()}`);
+            }
         });
-        project.tasks.push(task);
-        OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
-        console.log('task created');        
+        
+
     } catch (e) {
         console.log(`error creating task: ${e}`);
         console.log(e);
