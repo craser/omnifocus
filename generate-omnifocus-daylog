@@ -179,6 +179,15 @@ function parseProject(OmniFocus, meta) {
     return project;    
 }
 
+function parseProjects(OmniFocus, meta) {
+    var projects = [];
+    meta.replace(/\.(\w+)/gi, function (m, name) {
+        var project = getProject(OmniFocus, name);
+        projects.push(project);
+    });
+    return projects;    
+}
+
 function sameDay(a, b) {
     return a.getFullYear() === b.getFullYear()
         && a.getMonth() === b.getMonth()
@@ -214,18 +223,19 @@ function run(argv) {
         var OmniFocus = Application('OmniFocus');
         var bullet = parseTaskName(string);
         var meta = getMeta(string);
-        var project = parseProject(OmniFocus, meta);
         var dueDate = parseDueDate(meta);
         var tagNames = parseTagNames(OmniFocus, meta);
-       
-        console.log(formatHeader(project, dueDate));
-        project.tasks().map(function (task, i) {
-            if (taskMatches(task, dueDate, tagNames)) {
-                console.log(`  ${bullet} ${task.name()}`);
-            }
-        });
         
-
+        
+        var projects = parseProjects(OmniFocus, meta);
+        projects.map(function (project) {
+            console.log(formatHeader(project, dueDate));
+            project.tasks().map(function (task, i) {
+                if (taskMatches(task, dueDate, tagNames)) {
+                    console.log(`  ${bullet} ${task.name()}`);
+                }
+            });
+        });
     } catch (e) {
         console.log(`error creating task: ${e}`);
         console.log(e);

@@ -250,7 +250,7 @@ function run(argv) {
             dueDate: dueDate,
             note: string,
             completed: done,
-            completionDate: (done ? new Date() : null);
+            completionDate: (done ? new Date() : null)
         });
         project.tasks.push(task);
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
