@@ -18,6 +18,15 @@ function DayOfWeek(name, pattern, index) {
     this.index = index;
 }
 
+/**
+ * @return Date - Today at 7PM.
+ */
+function getDefaultDate() {
+    var date = new Date();
+    date.setHours(19, 0, 0);
+    return date;
+}
+
 function parseDayOfWeek(meta) {
     var date = new Date();
     DAYS_OF_WEEK.forEach(function (day) {
@@ -37,8 +46,8 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/\d+days?/i.test(meta)) {
-            var line = meta.match(/(\d+)days?/i);
+        if (/\d+\s?days?/i.test(meta)) {
+            var line = meta.match(/(\d+)\s?days?/i);
             var days = parseInt(line[1]);
             var date = new Date();
             date.setDate(date.getDate() + days);
@@ -55,17 +64,16 @@ function parseDate(meta) {
             var month = line[1];
             var day = line[2];
             var year = line[4] || new Date().getFullYear();
-            var date = new Date();
+            var date = getDefaultDate();
             date.setMonth(parseInt(month) - 1);
             date.setDate(day);
             date.setFullYear(year);
-            date.setHours(19, 0, 0); // 07:00 PM // TODO: Pull h, m, s from getDefaultDate().
             return date;            
         } else {
-            return new Date();
+            return getDefaultDate();
         }
     } catch (e) {
-        return new Date();
+        return getDefaultDate();
     }
 }
 
