@@ -46,7 +46,19 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/\d+\s?days?/i.test(meta)) {
+        if (/\d+\s?hrs?/i.test(meta)) {
+            var line = meta.match(/(\d+)\s?mins?/i);
+            var hours = parseInt(line[1]);
+            var date = new Date();
+            date.setHours(date.getHours() + hours);
+            return date;
+        } else if (/\d+\s?mins?/i.test(meta)) {
+            var line = meta.match(/(\d+)\s?mins?/i);
+            var minutes = parseInt(line[1]);
+            var date = new Date();
+            date.setMinutes(date.getMinutes() + minutes);
+            return date;
+        } else if (/\d+\s?days?/i.test(meta)) {
             var line = meta.match(/(\d+)\s?days?/i);
             var days = parseInt(line[1]);
             var date = new Date();
@@ -68,7 +80,7 @@ function parseDate(meta) {
             date.setMonth(parseInt(month) - 1);
             date.setDate(day);
             date.setFullYear(year);
-            return date;            
+            return date;
         } else {
             return getDefaultDate();
         }
@@ -85,7 +97,7 @@ function hasDayOfWeek(meta) {
         return !!found;
     } catch (e) {
         return false;
-    }    
+    }
 }
 
 /**
@@ -106,7 +118,7 @@ function parseTime(meta) {
         };
     } else {
         return null;
-    }    
+    }
 }
 
 function getDefaultDueDate() {
@@ -169,14 +181,14 @@ function getMeta(string) {
 
 function getTagNames(string) {
     var tags = [];
-    
+
     var taskName = parseTaskName(string);
     if (/expect/i.test(taskName)) {
         tags.push('waiting');
     }
-    
+
     var meta = getMeta(string);
-    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) { 
+    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) {
         tags.push(t);
     });
     return tags;
@@ -200,7 +212,7 @@ function parseProject(OmniFocus, string) {
     if (!project) {
         project = getProject(OmniFocus, DEFAULT_PROJECT);
     }
-    return project;    
+    return project;
 }
 
 function parseIsDone(string) {
@@ -209,15 +221,22 @@ function parseIsDone(string) {
     return isDone;
 }
 
+function createTag(OmniFocus, tagName) {
+    var tag = OmniFocus.Tag({
+        name: tagName
+    });
+    OmniFocus.defaultDocument.tags.push(tag);
+    return tag;
+}
+
 function parseTags(OmniFocus, string) {
     var tags = [];
     var tagNames = getTagNames(string);
     tagNames.forEach(function (tagName) {
         var found = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName }});
-        if (found.length) {
-            tags.push(found()[0]);
-        }
-    });    
+        var tag = (found.length) ? found()[0] : createTag(OmniFocus, tagName);
+        tags.push(tag);
+    });
     return tags;
 }
 
@@ -249,9 +268,9 @@ function run(argv) {
         var tags = parseTags(OmniFocus, string);
         var dueDate = parseDueDate(string);
         var done = parseIsDone(string);
-       
+
         logTaskData(taskName, project, primaryTag, tags, dueDate);
-        
+
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
@@ -262,7 +281,7 @@ function run(argv) {
         });
         project.tasks.push(task);
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
-        console.log('task created');        
+        console.log('task created');
     } catch (e) {
         console.log(`error creating task: ${e}`);
         console.log(e);
