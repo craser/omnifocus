@@ -1,0 +1,17 @@
+#!/bin/bash
+
+file="$1"
+project="$2"
+bin=`dirname $0`
+
+if [ -z "$file" ] | [ -z "$project" ]; then
+    echo "usage: $0 <file> <project>"
+    exit 10
+fi
+
+echo "Reading tasks from $file into project $project"
+
+cat $file | while read line; do
+    echo "task: $line"
+    $bin/create-omnifocus-task "$line"
+done

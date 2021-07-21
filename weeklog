@@ -1,0 +1,12 @@
+#!/bin/bash
+
+bin=`dirname $0`
+
+today=`date "+%d"`
+monday=`date -v-monday "+%d"`
+days_ago=$(($today - $monday))
+
+for ((d = $days_ago; d >= 0; d--)); do
+    date=`date -v "-${d}d" "+%m/%d/%Y"`
+    $bin/daylog "✅ // $date $*"
+done
