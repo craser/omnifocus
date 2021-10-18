@@ -46,19 +46,7 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/\d+\s?hrs?/i.test(meta)) {
-            var line = meta.match(/(\d+)\s?mins?/i);
-            var hours = parseInt(line[1]);
-            var date = new Date();
-            date.setHours(date.getHours() + hours);
-            return date;
-        } else if (/\d+\s?mins?/i.test(meta)) {
-            var line = meta.match(/(\d+)\s?mins?/i);
-            var minutes = parseInt(line[1]);
-            var date = new Date();
-            date.setMinutes(date.getMinutes() + minutes);
-            return date;
-        } else if (/\d+\s?days?/i.test(meta)) {
+        if (/\d+\s?days?/i.test(meta)) {
             var line = meta.match(/(\d+)\s?days?/i);
             var days = parseInt(line[1]);
             var date = new Date();
@@ -106,11 +94,31 @@ function hasDayOfWeek(meta) {
  * @returns {string} Formatted time string (ex: '4:33 PM')
  */
 function parseTime(meta) {
-    var match = meta.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);
-    if (match) {
-        var offset = /pm/i.test(match[4]) ? 12 : 0;
-        var hours = (parseInt(match[1]) %12) + offset;
-        var minutes = match[3] ? parseInt(match[3]) : 0;
+    if (/\d+\s?hrs?/i.test(meta)) {
+        var line = meta.match(/(\d+)\s?hrs?/i);
+        var hours = parseInt(line[1]);
+        var date = new Date();
+        date.setHours(date.getHours() + hours);
+        return {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+            seconds: 0
+        };
+    } else if (/\d+\s?mins?/i.test(meta)) {
+        var line = meta.match(/(\d+)\s?mins?/i);
+        var minutes = parseInt(line[1]);
+        var date = new Date();
+        date.setMinutes(date.getMinutes() + minutes);
+        return {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+            seconds: 0
+        };
+    } else if (/(\d{1,2})(:(\d\d))?\s*(am|pm)/i.test(meta)) {
+        var line = meta.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);
+        var offset = /pm/i.test(line[4]) ? 12 : 0;
+        var hours = (parseInt(line[1]) %12) + offset;
+        var minutes = line[3] ? parseInt(line[3]) : 0;
         return {
             hours: hours,
             minutes: minutes,
