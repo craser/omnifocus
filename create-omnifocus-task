@@ -229,6 +229,12 @@ function parseIsDone(string) {
     return isDone;
 }
 
+function parseIsFlagged(string) {
+    var meta = getMeta(string);
+    var flagged = /\bflag(ged)?\b/i.test(meta);
+    return flagged;
+}
+
 function createTag(OmniFocus, tagName) {
     var tag = OmniFocus.Tag({
         name: tagName
@@ -275,16 +281,17 @@ function run(argv) {
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
         var dueDate = parseDueDate(string);
+        var flagged = parseIsFlagged(string);
         var done = parseIsDone(string);
 
         logTaskData(taskName, project, primaryTag, tags, dueDate);
-
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
             dueDate: dueDate,
             note: string,
             completed: done,
+            flagged: flagged,
             completionDate: (done ? new Date() : null)
         });
         project.tasks.push(task);
