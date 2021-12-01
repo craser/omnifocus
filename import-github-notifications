@@ -1,6 +1,7 @@
 #!/usr/bin/env osascript -l JavaScript
 
 const DEFAULT_PROJECT = 'work';
+const ACCESS_TOKEN = "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";
 
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
@@ -255,19 +256,74 @@ function logTaskData(name, project, primaryTag, tags, dueDate) {
     }
 }
 
+
+/*
+def fetch_notifications(access_token)
+  url = "https://api.github.com/notifications?all=true&per_page=100&page=1"
+  cmd = "curl -H \"Authorization: token #{access_token}\" -H \"Accept: application/vnd.github.v3+json\" \"#{url}\""
+  ticket_json = `#{cmd}`
+  return ticket_json;
+end
+
+def mark_notifications_as_read(access_token)
+  url = "https://api.github.com/notifications"
+  cmd = "curl -s -X PUT -H \"Authorization: token #{access_token}\" -H \"Accept: application/vnd.github.v3+json\" \"#{url}\" -d '{\"last_read_at\":\"last_read_at\"}'"
+  ticket_json = `#{cmd}`
+  return ticket_json;
+end
+
+*/
+
 function getNotifications() {
+    return gitRequest('https://api.github.com/notifications?per_page=100&page=1', 'GET');
+}
+
+function markNotificationsAsRead() {
+    // YYYY-MM-DDTHH:MM:SSZ
+    var now = new Date();
+    var dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}T${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}GMT-7`;
+    return gitRequest('https://api.github.com/notifications?per_page=100&page=1', 'PUT', { 'last_read_at': dateString });
+}
+
+function gitRequest(url, method, data) {
     var json = '';
     try {
         app = Application.currentApplication()
         app.includeStandardAdditions = true;
-        json = app.doShellScript('/Users/craser/bin/github/github-notifications') // -r marks as read
-        var notifications = JSON.parse(json);
-        return notifications;
+        var curlMethod = (!!method) ? `-X ${method}` : '';
+        var curlData = (!!data) ? `-d '${JSON.stringify(data)}'` : '';
+        var cmd = `curl ${curlMethod} -H "Authorization: token ${ACCESS_TOKEN}" -H "Accept: application/vnd.github.v3+json" "${url}" ${curlData}`;
+        json = app.doShellScript(cmd);
+        var response = JSON.parse(json);
+        console.log('# start #############################################################################');
+        console.log(` cmd: ${cmd}`);
+        console.log(` url: ${url}`);
+        console.log(` json: ${JSON.stringify(response)}`);
+        console.log('# end ###############################################################################');
+        return response;
     } catch (e) {
         console.log('error retrieving & parsing json');
-        console.log('json:' + json);
+        console.log(`url: ${url}`);
+        console.log(`json: ${json}`);
         return [];
     }
+}
+
+function formatTaskName(prefix, notification) {
+    return `${prefix} ${notification.subject.type}: ${notification.subject.title}`;
+}
+
+function getLink(notification) { // FIXME: URLs from notifications are returning 404. Using dummy link here.
+    return 'https://github.com/notifications';
+
+    /*
+    var url = 'https://api.github.com/repos/ua-digital-commerce/ua-tealium/pulls?pull_number=281';
+    var obj = gitRequest(url);
+    link = (obj.length)
+        ? obj[0].html_url
+        : obj.html_url;
+    return link;
+    */
 }
 
 function run(argv) {
@@ -277,7 +333,6 @@ function run(argv) {
         console.log(`input: ${argv[0]}`);
 
         var notifications = getNotifications();
-        console.log(JSON.stringify(notifications));
 
         var OmniFocus = Application('OmniFocus');
         var string = argv[0]; // provides defaults for due date, project, etc.
@@ -290,12 +345,16 @@ function run(argv) {
 
         notifications.forEach(function (notification) {
             //logTaskData(taskName, project, primaryTag, tags, dueDate);
-            var taskName = prefix + ': ' + notification.subject.title;
+            var taskName = formatTaskName(prefix, notification);
+            var note = getLink(notification);
+            console.log(taskName);
+            console.log(`    ➤ ${note}`);
+
             var task = OmniFocus.Task({
                 name: taskName,
                 primaryTag: primaryTag,
                 dueDate: dueDate,
-                note: notification.subject.url,
+                note: note,
                 completed: done,
                 completionDate: (done ? new Date() : null)
             });
@@ -304,6 +363,7 @@ function run(argv) {
             console.log(`task created: ${taskName}`);
         });
 
+        markNotificationsAsRead();
     } catch (e) {
         console.log(`error creating task: ${e}`);
         console.log(e);
