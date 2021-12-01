@@ -254,6 +254,31 @@ function parseTags(OmniFocus, string) {
     return tags;
 }
 
+function formatPhone(string) {
+    var digits = string.replace(/[^\d]/, '');
+    var phone = digits.replace(/(...)(...)(....)/, "($1) $2-$3");
+    return phone;
+}
+
+function parsePhoneNumbers(string) {
+    var re = /((\+1)?[(]*(\d{3})[).\s]*(\d{3})[.\s\-]*(\d{4}))/g;
+    var phones = [];
+    string.replace(re, function (p) {
+        phones.push(formatPhone(p));
+    });
+    return phones;
+}
+
+function parseNote(string) {
+    var note = string;
+    try {
+        note += parsePhoneNumbers(string).map(p => `\np: ${p}`).join('');
+    } catch (e) {
+        note = string + '\n\n' + e.toString();
+    }
+    return note;
+}
+
 function logTaskData(name, project, primaryTag, tags, dueDate) {
     try {
         console.log(`name    : ${name}`);
@@ -280,16 +305,17 @@ function run(argv) {
         var taskName = parseTaskName(string);
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
+        let note = parseNote(string);
         var dueDate = parseDueDate(string);
         var flagged = parseIsFlagged(string);
-        var done = parseIsDone(string);
 
+        var done = parseIsDone(string);
         logTaskData(taskName, project, primaryTag, tags, dueDate);
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
             dueDate: dueDate,
-            note: string,
+            note: note,
             completed: done,
             flagged: flagged,
             completionDate: (done ? new Date() : null)
