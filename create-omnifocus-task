@@ -162,6 +162,14 @@ function getProject(OmniFocus, prjName) {
     }
 }
 
+function getTask(OmniFocus, project, taskName){
+    console.log(`getTask`);
+    var tasks = project.tasks.whose({_and: [{name: { _equals: taskName }}, {completed: { _equals: "false"}}]});
+    console.log(`found ${tasks.length} tasks`);
+    var task = tasks.length ? tasks[0] : null;
+    return task.get();
+}
+
 function getTag(OmniFocus, tagName) {
     try {
         var tags = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName } });
@@ -213,14 +221,26 @@ function parsePrimaryTag(OmniFocus, string) {
     return tag;
 }
 
-function parseProject(OmniFocus, string) {
+function parseContext(OmniFocus, string) {
     var meta = getMeta(string);
     var projectName = meta.replace(/^.*\.(\w+)\b.*$/, '$1');
     var project = getProject(OmniFocus, projectName);
+    var task = null;
     if (!project) {
         project = getProject(OmniFocus, DEFAULT_PROJECT);
+        console.log(`getting task: ${projectName}`);
+        try {
+            task = getTask(OmniFocus, project, projectName); // is there a task matching project name?
+        } catch (e) {
+            console.log(e);
+        }
+
     }
-    return project;
+
+    return {
+        project: project,
+        task: task
+    };
 }
 
 function parseIsDone(string) {
@@ -279,12 +299,13 @@ function parseNote(string) {
     return note;
 }
 
-function logTaskData(name, project, primaryTag, tags, dueDate) {
+function logTaskData(name, context, primaryTag, tags, dueDate) {
     try {
         console.log(`name    : ${name}`);
         console.log(`due     : ${dueDate}`);
-        console.log(`project : ${project.name()}`);
-        console.log(`primary : ${primaryTag.name}`);
+        console.log(`project : ${context.project.name()}`);
+        console.log(`parent  : ${context.task.name()}`);
+        console.log(`primary : ${primaryTag ? primaryTag.name : ''}`);
         console.log(`tags (${tags.length}) :`);
         tags.forEach(function (tag, i) {
             console.log(`  [${i}]: ${tag.name}`);
@@ -301,7 +322,7 @@ function run(argv) {
         console.log(`input: "${argv[0]}"`);
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
-        var project = parseProject(OmniFocus, string);
+        var context = parseContext(OmniFocus, string);
         var taskName = parseTaskName(string);
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
@@ -310,7 +331,7 @@ function run(argv) {
         var flagged = parseIsFlagged(string);
 
         var done = parseIsDone(string);
-        logTaskData(taskName, project, primaryTag, tags, dueDate);
+        logTaskData(taskName, context, primaryTag, tags, dueDate);
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
@@ -320,7 +341,8 @@ function run(argv) {
             flagged: flagged,
             completionDate: (done ? new Date() : null)
         });
-        project.tasks.push(task);
+
+        (context.task || context.project).tasks.push(task);
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
         console.log('task created');
     } catch (e) {
