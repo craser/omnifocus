@@ -1,6 +1,7 @@
 #!/usr/bin/env osascript -l JavaScript
 
 const DEFAULT_PROJECT = 'work';
+const DEFAULT_PARENT_TASK = 'general';
 
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
@@ -163,7 +164,7 @@ function getProject(OmniFocus, prjName) {
 }
 
 function getTask(project, taskName){
-    var tasks = project.tasks.whose({_and: [{name: { _equals: taskName }}, {completed: { _equals: "false"}}]});
+    var tasks = project.tasks.whose({_and: [{name: { _beginsWith: taskName }}, {completed: { _equals: "false"}}]});
     var task = tasks.length ? tasks[0] : null;
     return task;
 }
@@ -279,53 +280,82 @@ function logTaskData(name, primaryTag, tags, dueDate) {
     try {
         console.log(`name    : ${name}`);
         console.log(`due     : ${dueDate}`);
-        console.log(`primary : ${primaryTag ? primaryTag.name : ''}`);
-        console.log(`tags (${tags.length}) :`);
-        tags.forEach(function (tag, i) {
-            console.log(`  [${i}]: ${tag.name}`);
-        });
+        console.log(`primary : ${primaryTag ? primaryTag.name() : ''}`);
+        console.log(`tags (${tags.length}) : [${tags.map(x => `'${x.name()}'`)}]`);
     } catch (e) {
         console.log(`error logging info: ${e}`);
     }
 }
 
-function ensureContext(OmniFocus, parent, contextSpec, task) {
-    console.log(`ensureContext([${contextSpec.map(x => `'${x}'`)}] (length: ${contextSpec.length})`);
-    if (!contextSpec.length) {
-        console.log('at end of context. adding task');
+function ensureContext(OmniFocus, parent, context, task) {
+    if (!context.length) {
         parent.tasks.push(task);
     } else {
-        console.log(`checking context: ${contextSpec[0]}`);
-        var child = getTask(parent, contextSpec[0], task);
+        var child = getTask(parent, context[0], task);
         if (!child) {
-            child = OmniFocus.Task({ name: contextSpec[0] });
+            child = OmniFocus.Task({ name: context[0] });
             parent.tasks.push(child);
-            ensureContext(OmniFocus, child, contextSpec.slice(1), task);
+            ensureContext(OmniFocus, child, context.slice(1), task);
         } else {
-            ensureContext(OmniFocus, child, contextSpec.slice(1), task);
+            ensureContext(OmniFocus, child, context.slice(1), task);
         }
     }
 }
 
+function isDefaultProject(project) {
+    var prjName = project.name().toLowerCase();
+    var defName = DEFAULT_PROJECT.toLowerCase();
+    var match = prjName == defName;
+    return match;
+}
+
+/**
+ * Resolves the given ".project.parent-task.subparent-task" context notation into an unambiguous path specifier.
+ *   - the first item in the context is ALWAYS a project name. If the fist item in the notation is not
+ *     a project name, DEFAULT_PROJECT is prepended.
+ *   - IFF we've defaulted to the DEFAULT_PROJECT, AND no context is specified, DEFAULT_PARENT_TASK is appended.
+ *
+ *   EXAMPLES:
+ *   - ''           ➤ [DEFAULT_PROJECT, DEFAULT_PARENT_TASK]
+ *   - '.prj'       ➤ ['prj']
+ *   - '.prj.task'  ➤ ['prj', 'task']
+ *   - '.task'      ➤ [DEFAULT_PROJECT, 'task']
+ *
+ * @param OmniFocus
+ * @param string
+ * @return {*[]}
+ */
+function parseContext(OmniFocus, string) {
+    var contextSpec = parseContextSpec(string);
+    var context = [];
+    var project = getProject(OmniFocus, contextSpec[0]);
+    if (!project) {
+        context.push(DEFAULT_PROJECT); // first note in path should always be a project.
+        if (!contextSpec.length) {
+            context.push(DEFAULT_PARENT_TASK);
+        }
+    }
+    context = context.concat(contextSpec);
+    console.log(`context: [${context.map(x => `'${x}'`).join(', ')}]`);
+    return context;
+}
+
 function parseContextSpec(string) {
     var meta = getMeta(string);
-    var contextSpec = meta.replace(/^.*?\.([\w.]+)\b.*$/, '$1')
+    var contextSpec = meta.replace(/^.*?\.([^\s]+)\b.*$/, '$1')
         .split('.')
         .filter(x => x != '');
     return contextSpec;
 }
 
 function addTaskToContext(OmniFocus, string, task) {
-    console.log(`parseContext('${string}')`);
-    var contextSpec = parseContextSpec(string);
-    console.log(`contextSpec: ${contextSpec}`);
-
-    var project = getProject(OmniFocus, contextSpec[0]);
+    var context = parseContext(OmniFocus, string);
+    var project = getProject(OmniFocus, context[0]);
     if (project) {
-        return ensureContext(OmniFocus, project, contextSpec.slice(1), task);
+        return ensureContext(OmniFocus, project, context.slice(1), task);
     } else {
         project = getProject(OmniFocus, DEFAULT_PROJECT);
-        return ensureContext(OmniFocus, project, contextSpec, task);
+        return ensureContext(OmniFocus, project, context, task);
     }
 }
 
