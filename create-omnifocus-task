@@ -299,8 +299,33 @@ function ensureContext(OmniFocus, parent, context, task) {
         } else {
             ensureContext(OmniFocus, child, context.slice(1), task);
         }
-    }
 }
+
+/**
+ * Resolves the given ".project.parent-task.subparent-task" context notation into an unambiguous path specifier.
+ *   - the first item in the context is ALWAYS a project name. If the fist item in the notation is not
+ *     a project name, DEFAULT_PROJECT is prepended.
+ *   - IFF we've defaulted to the DEFAULT_PROJECT, AND no context is specified, DEFAULT_PARENT_TASK is appended.
+ *
+ *   EXAMPLES:
+ *   - ''           ➤ [DEFAULT_PROJECT, DEFAULT_PARENT_TASK]
+ *   - '.prj'       ➤ ['prj']
+ *   - '.prj.task'  ➤ ['prj', 'task']
+ *   - '.task'      ➤ [DEFAULT_PROJECT, 'task']
+ *
+ * @param OmniFocus
+ * @param string
+ * @return {*[]}
+ */
+function parseContext(OmniFocus, string) {
+    var contextSpec = parseContextSpec(string);
+    var context = [];
+    var project = getProject(OmniFocus, contextSpec[0]);
+    if (!project) {
+        context.push(DEFAULT_PROJECT); // first note in path should always be a project.
+        if (!contextSpec.length) {
+            context.push(DEFAULT_PARENT_TASK);
+        }
 
 /**
  * WARNING: THIS IS WONKY, partly because I'm still working out how I want this to behave.
@@ -338,6 +363,10 @@ function parseContext(OmniFocus, string) {
 
         context = context.concat(contextSpec);
     }
+    console.log(`context: [${context.map(x => `'${x}'`).join(', ')}]`);
+    return context;
+    }
+    context = context.concat(contextSpec);
     console.log(`context: [${context.map(x => `'${x}'`).join(', ')}]`);
     return context;
 }
