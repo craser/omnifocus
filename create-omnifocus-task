@@ -1,6 +1,7 @@
 #!/usr/bin/env osascript -l JavaScript
 
 const DEFAULT_PROJECT = 'work';
+const DEFAULT_PARENT_TASK = 'general';
 
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
@@ -162,12 +163,10 @@ function getProject(OmniFocus, prjName) {
     }
 }
 
-function getTask(OmniFocus, project, taskName){
-    console.log(`getTask`);
-    var tasks = project.tasks.whose({_and: [{name: { _equals: taskName }}, {completed: { _equals: "false"}}]});
-    console.log(`found ${tasks.length} tasks`);
+function getTask(project, taskName){
+    var tasks = project.tasks.whose({_and: [{name: { _beginsWith: taskName }}, {completed: { _equals: "false"}}]});
     var task = tasks.length ? tasks[0] : null;
-    return task.get();
+    return task;
 }
 
 function getTag(OmniFocus, tagName) {
@@ -219,28 +218,6 @@ function parsePrimaryTag(OmniFocus, string) {
     var name = getPrimaryTagName(string);
     var tag = getTag(OmniFocus, name);
     return tag;
-}
-
-function parseContext(OmniFocus, string) {
-    var meta = getMeta(string);
-    var projectName = meta.replace(/^.*\.(\w+)\b.*$/, '$1');
-    var project = getProject(OmniFocus, projectName);
-    var task = null;
-    if (!project) {
-        project = getProject(OmniFocus, DEFAULT_PROJECT);
-        console.log(`getting task: ${projectName}`);
-        try {
-            task = getTask(OmniFocus, project, projectName); // is there a task matching project name?
-        } catch (e) {
-            console.log(e);
-        }
-
-    }
-
-    return {
-        project: project,
-        task: task
-    };
 }
 
 function parseIsDone(string) {
@@ -299,19 +276,88 @@ function parseNote(string) {
     return note;
 }
 
-function logTaskData(name, context, primaryTag, tags, dueDate) {
+function logTaskData(name, primaryTag, tags, dueDate) {
     try {
         console.log(`name    : ${name}`);
         console.log(`due     : ${dueDate}`);
-        console.log(`project : ${context.project.name()}`);
-        console.log(`parent  : ${context.task.name()}`);
-        console.log(`primary : ${primaryTag ? primaryTag.name : ''}`);
-        console.log(`tags (${tags.length}) :`);
-        tags.forEach(function (tag, i) {
-            console.log(`  [${i}]: ${tag.name}`);
-        });
+        console.log(`primary : ${primaryTag ? primaryTag.name() : ''}`);
+        console.log(`tags (${tags.length}) : [${tags.map(x => `'${x.name()}'`)}]`);
     } catch (e) {
         console.log(`error logging info: ${e}`);
+    }
+}
+
+function ensureContext(OmniFocus, parent, context, task) {
+    if (!context.length) {
+        parent.tasks.push(task);
+    } else {
+        var child = getTask(parent, context[0], task);
+        if (!child) {
+            child = OmniFocus.Task({ name: context[0] });
+            parent.tasks.push(child);
+            ensureContext(OmniFocus, child, context.slice(1), task);
+        } else {
+            ensureContext(OmniFocus, child, context.slice(1), task);
+        }
+    }
+}
+
+/**
+ * WARNING: THIS IS WONKY, partly because I'm still working out how I want this to behave.
+ *
+ * Resolves the given ".project.parent-task.subparent-task" context notation into an unambiguous path specifier.
+ *   - the first item in the context is ALWAYS a project name. If the fist item in the notation is not
+ *     a project name, DEFAULT_PROJECT is prepended.
+ *   - IFF we've defaulted to the DEFAULT_PROJECT, AND no context is specified, DEFAULT_PARENT_TASK is appended.
+ *
+ *   EXAMPLES:
+ *   - ''                       ➤ [DEFAULT_PROJECT, DEFAULT_PARENT_TASK]
+ *   - '.prj'                   ➤ ['prj']
+ *   - '.prj.task'              ➤ ['prj', 'task']
+ *   - '.prj.task.subtask'      ➤ ['prj', 'task', 'subtask']
+ *   - '.task'                  ➤ [DEFAULT_PROJECT, 'task']
+ *   - '.task.subtask'          ➤ [DEFAULT_PROJECT, 'task', 'subtask']
+ *
+ * @param OmniFocus
+ * @param string
+ * @return {*[]}
+ */
+function parseContext(OmniFocus, string) {
+    var contextSpec = parseContextSpec(string);
+    var context = [];
+    if (!contextSpec.length) {
+        context = [DEFAULT_PROJECT, DEFAULT_PARENT_TASK];
+    } else {
+        var project = getProject(OmniFocus, contextSpec[0]);
+        if (!project) {
+            context.push(DEFAULT_PROJECT); // first note in path should always be a project.
+        } else {
+            contextSpec.shift(); // discard the used name
+            context.push(project.name()); // use the actual name
+        }
+
+        context = context.concat(contextSpec);
+    }
+    console.log(`context: [${context.map(x => `'${x}'`).join(', ')}]`);
+    return context;
+}
+
+function parseContextSpec(string) {
+    var meta = getMeta(string);
+    var contextSpec = meta.replace(/^.*?\.([^\s]+)\b.*$/, '$1')
+        .split('.')
+        .filter(x => x != '');
+    return contextSpec;
+}
+
+function addTaskToContext(OmniFocus, string, task) {
+    var context = parseContext(OmniFocus, string);
+    var project = getProject(OmniFocus, context[0]);
+    if (project) {
+        return ensureContext(OmniFocus, project, context.slice(1), task);
+    } else {
+        project = getProject(OmniFocus, DEFAULT_PROJECT);
+        return ensureContext(OmniFocus, project, context, task);
     }
 }
 
@@ -322,7 +368,6 @@ function run(argv) {
         console.log(`input: "${argv[0]}"`);
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
-        var context = parseContext(OmniFocus, string);
         var taskName = parseTaskName(string);
         var primaryTag = parsePrimaryTag(OmniFocus, string);
         var tags = parseTags(OmniFocus, string);
@@ -331,7 +376,7 @@ function run(argv) {
         var flagged = parseIsFlagged(string);
 
         var done = parseIsDone(string);
-        logTaskData(taskName, context, primaryTag, tags, dueDate);
+        logTaskData(taskName, primaryTag, tags, dueDate);
         var task = OmniFocus.Task({
             name: taskName,
             primaryTag: primaryTag,
@@ -341,8 +386,7 @@ function run(argv) {
             flagged: flagged,
             completionDate: (done ? new Date() : null)
         });
-
-        (context.task || context.project).tasks.push(task);
+        addTaskToContext(OmniFocus, string, task);
         OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
         console.log('task created');
     } catch (e) {

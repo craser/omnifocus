@@ -21,12 +21,13 @@ your task info (task info syntax below) in the box and hit **RETURN** to create 
 
 ### General Syntax
 
-> [task description] // .[project] :[tag] [due date] [time] [done]
+> [task description] // .[project[.subtask]] :[tag] [due date] [time] [done] [flag]
 
 * Everything before the *//* is the task description.
 * The project, tag, and due date can be in any order.
 * Project: a dot (.) followed by the project name.
-  * If not specified, defaults to **Work**
+  * Supports **subtasks**, by appending task name(s) after dot.
+  * If not specified, defaults to **.work.general** (The **Work** project, under the **General** subtask.)
   * **Can** be just the first few letters of the project name
   * **Not** case-sensitive
 * Tag: a colon (:) followed by the project name.
@@ -45,7 +46,10 @@ your task info (task info syntax below) in the box and hit **RETURN** to create 
 * Done:
   * Is either absent, or the string "done"
   * If present, the new task is marked as **completed**, with a **completion date** of **now**.
-  
+* Flag
+  * Is either absent, or the string "done"
+  * If present, the new task is marked as **flagged**
+
 ### Examples
 
 By default, all tasks are created in the **Work** project, with a Due Date of **Today at 7:00 PM** This works for me, and 
@@ -53,27 +57,31 @@ you're more than welcome to update your copy of this code to remove/alter those 
 
 > Book dermatology appointment
 
-Crates a new task "Book dermatology appointment" in the project **Work**, due **today at 7:00 PM**
+Creates a new task "Book dermatology appointment" in the project **Work**, nested under the **General** subtask, due **today at 7:00 PM**
+
+> Make the logo bigger // .THX-1138 
+
+Creates a new task "Make the logo bigger" in the project **Work**, nested under the **THX-1138** subtask, due **today at 7:00 PM**
 
 > Book dermatology appointment // .health
 
-Crates a new task "Book dermatology appointment" in the project **Health**, due **today at 7:00 PM**
+Creates a new task "Book dermatology appointment" in the project **Health**, due **today at 7:00 PM**
 
 > Book dermatology appointment // .health :phone
 
-Crates a new task "Book dermatology appointment" in the project **Health**, with the tag **Phone**, due **today at 7:00 PM**
+Creates a new task "Book dermatology appointment" in the project **Health**, with the tag **Phone**, due **today at 7:00 PM**
 
 > Book dermatology appointment // .health :phone 2pm
 
-Crates a new task "Book dermatology appointment" in the project **Health**, with the tag **Phone**, due **today at 2:00 PM**
+Creates a new task "Book dermatology appointment" in the project **Health**, with the tag **Phone**, due **today at 2:00 PM**
 
 > Book dermatology appointment // .health 10:30am
 
-Crates a new task "Book dermatology appointment" in the project **Health**, due **today at 10:30 AM**
+Creates a new task "Book dermatology appointment" in the project **Health**, due **today at 10:30 AM**
 
-> Ping Horatio re. New Spec // .work 10am done
+> Ping Horatio re. New Spec // .work 10am flag
 
-Creates a new task "Ping Horation re. New Spec"" in the project **Work**, due at 10:00 AM today, marked as **completed**.
+Creates a new task "Ping Horation re. New Spec"" in the project **Work**, due at 10:00 AM today, marked as **flagged**.
 
 
 
