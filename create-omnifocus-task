@@ -190,7 +190,7 @@ function parseTaskName(string) {
  * @returns {*}
  */
 function getMeta(string) {
-    var meta = string.replace(/^.*?(\/\/|$)/, "");
+    var meta = string.replace(/^.*?((\/\/.*?)(\/\*\*.*|$)|$)/, '$2');
     return meta;
 }
 
@@ -252,7 +252,8 @@ function parseTags(OmniFocus, string) {
 }
 
 function formatPhone(string) {
-    var digits = string.replace(/[^\d]/, '');
+    debugger;
+    var digits = string.replace(/[^\d]/g, '');
     var phone = digits.replace(/(...)(...)(....)/, "($1) $2-$3");
     return phone;
 }
@@ -267,7 +268,7 @@ function parsePhoneNumbers(string) {
 }
 
 function parseNote(string) {
-    var note = string;
+    var note = string.replace(/^.*?(\/\*\*\s*|$)/, '');
     try {
         note += parsePhoneNumbers(string).map(p => `\np: ${p}`).join('');
     } catch (e) {
@@ -323,9 +324,14 @@ function parseContext(OmniFocus, string) {
     var project = getProject(OmniFocus, contextSpec[0]);
     if (!project) {
         context.push(DEFAULT_PROJECT); // first note in path should always be a project.
-        if (!contextSpec.length) {
-            context.push(DEFAULT_PARENT_TASK);
-        }
+    } else {
+        contextSpec.shift(); // discard the used name
+        context.push(project.name()); // use the actual name
+    }
+
+    if ((context[0] == DEFAULT_PROJECT) && !contextSpec.length) {
+        context.push(DEFAULT_PARENT_TASK);
+    }
 
 /**
  * WARNING: THIS IS WONKY, partly because I'm still working out how I want this to behave.
