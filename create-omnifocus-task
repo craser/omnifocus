@@ -347,10 +347,16 @@ function parseContext(OmniFocus, string) {
 
 function parseContextSpec(string) {
     var meta = getMeta(string);
-    var contextSpec = meta.replace(/^.*?\.([^\s]+)\b.*$/, '$1')
-        .split('.')
-        .filter(x => x != '');
-    return contextSpec;
+
+    var regex = /^.*?\.([^\s]+)\b.*$/;
+    if (regex.test(string)) {
+        var contextSpec = meta.replace(regex, '$1')
+            .split('.')
+            .filter(x => x != '');
+        return contextSpec;
+    } else {
+        return [];
+    }
 }
 
 function addTaskToContext(OmniFocus, string, task) {
@@ -369,6 +375,7 @@ function run(argv) {
         console.log('################################################################################');
         console.log(`creating new task: ${new Date()}`);
         console.log(`input: "${argv[0]}"`);
+
         var string = argv[0];
         var OmniFocus = Application('OmniFocus');
         var taskName = parseTaskName(string);
