@@ -214,13 +214,12 @@ function getPrimaryTagName(string) {
     return tagNames.length ? tagNames[0] : null;
 }
 
-function parsePrimaryTag(OmniFocus, string) {
-    var name = getPrimaryTagName(string);
+function parsePrimaryTag(OmniFocus, name) {
     var tag = getTag(OmniFocus, name);
     return tag;
 }
 
-function parseIsDone(string) {
+function parseIsCompleted(string) {
     var meta = getMeta(string);
     var isDone = /\bdone\b/i.test(meta);
     return isDone;
@@ -240,9 +239,8 @@ function createTag(OmniFocus, tagName) {
     return tag;
 }
 
-function parseTags(OmniFocus, string) {
+function parseTags(OmniFocus, tagNames) {
     var tags = [];
-    var tagNames = getTagNames(string);
     tagNames.forEach(function (tagName) {
         var found = OmniFocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName }});
         var tag = (found.length) ? found()[0] : createTag(OmniFocus, tagName);
@@ -322,11 +320,10 @@ function isDefaultProject(project) {
  *   - '.task'      ➤ [DEFAULT_PROJECT, 'task']
  *
  * @param OmniFocus
- * @param string
+ * @param contextSpec
  * @return {*[]}
  */
-function parseContext(OmniFocus, string) {
-    var contextSpec = parseContextSpec(string);
+function parseContext(OmniFocus, contextSpec) {
     var context = [];
     var project = getProject(OmniFocus, contextSpec[0]);
     if (!project) {
@@ -359,8 +356,8 @@ function parseContextSpec(string) {
     }
 }
 
-function addTaskToContext(OmniFocus, string, task) {
-    var context = parseContext(OmniFocus, string);
+function addTaskToContext(OmniFocus, contextSpec, task) {
+    var context = parseContext(OmniFocus, contextSpec);
     var project = getProject(OmniFocus, context[0]);
     if (project) {
         return ensureContext(OmniFocus, project, context.slice(1), task);
@@ -370,37 +367,50 @@ function addTaskToContext(OmniFocus, string, task) {
     }
 }
 
+function parseTask(string) {
+    var task = {
+        name: parseTaskName(string),
+        tagNames: getTagNames(string),
+        note: parseNote(string),
+        dueDate: parseDueDate(string),
+        flagged: parseIsFlagged(string),
+        contextSpec: parseContextSpec(string),
+        completed: parseIsCompleted(string),
+        primaryTagName: getPrimaryTagName(string)
+    }
+    return task;
+}
+
+function createOmniFocusTask(task) {
+    var OmniFocus = Application('OmniFocus'); // TODO: Move all references to "string" above this line, and all refs to "Omnifocus" below this line.
+    var primaryTag = parsePrimaryTag(OmniFocus, task.primaryTagName);
+    var tags = parseTags(OmniFocus, task.tagNames);
+    //logTaskData(taskName, primaryTag, tags, dueDate);
+    var omniFocusTask = OmniFocus.Task({
+        name: task.name,
+        primaryTag: primaryTag,
+        dueDate: task.dueDate,
+        note: task.note,
+        completed: task.completed,
+        flagged: task.flagged,
+        completionDate: (task.completed ? new Date() : null)
+    });
+    addTaskToContext(OmniFocus, task.contextSpec, omniFocusTask);
+    OmniFocus.add(tags, { to: omniFocusTask.tags }); // This must be AFTER push() above, because side effects are awesome.
+}
+
 function run(argv) {
     try {
         console.log('################################################################################');
         console.log(`creating new task: ${new Date()}`);
         console.log(`input: "${argv[0]}"`);
-
         var string = argv[0];
-        var OmniFocus = Application('OmniFocus');
-        var taskName = parseTaskName(string);
-        var primaryTag = parsePrimaryTag(OmniFocus, string);
-        var tags = parseTags(OmniFocus, string);
-        let note = parseNote(string);
-        var dueDate = parseDueDate(string);
-        var flagged = parseIsFlagged(string);
-
-        var done = parseIsDone(string);
-        logTaskData(taskName, primaryTag, tags, dueDate);
-        var task = OmniFocus.Task({
-            name: taskName,
-            primaryTag: primaryTag,
-            dueDate: dueDate,
-            note: note,
-            completed: done,
-            flagged: flagged,
-            completionDate: (done ? new Date() : null)
-        });
-        addTaskToContext(OmniFocus, string, task);
-        OmniFocus.add(tags, { to: task.tags }); // This must be AFTER push() above, because side effects are awesome.
+        var task = parseTask(string);
+        createOmniFocusTask(task);
         console.log('task created');
     } catch (e) {
         console.log(`error creating task: ${e}`);
         console.log(e);
     }
 }
+
