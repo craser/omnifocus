@@ -1,7 +1,9 @@
-#!/usr/bin/env osascript -l JavaScript
+#!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
 
 const DEFAULT_PROJECT = 'work';
 const DEFAULT_PARENT_TASK = 'general';
+const { exec } = require('child_process');
+
 
 const DAYS_OF_WEEK = [
     new DayOfWeek('sunday', /(sun|sunday)/i, 0),
@@ -381,22 +383,18 @@ function parseTask(string) {
     return task;
 }
 
-function createOmniFocusTask(task) {
-    var OmniFocus = Application('OmniFocus'); // TODO: Move all references to "string" above this line, and all refs to "Omnifocus" below this line.
-    var primaryTag = parsePrimaryTag(OmniFocus, task.primaryTagName);
-    var tags = parseTags(OmniFocus, task.tagNames);
-    //logTaskData(taskName, primaryTag, tags, dueDate);
-    var omniFocusTask = OmniFocus.Task({
-        name: task.name,
-        primaryTag: primaryTag,
-        dueDate: task.dueDate,
-        note: task.note,
-        completed: task.completed,
-        flagged: task.flagged,
-        completionDate: (task.completed ? new Date() : null)
+function shell(cmd, f) {
+    exec(cmd, function (error, stdout, stderr) {
+        f(stdout.trim());
     });
-    addTaskToContext(OmniFocus, task.contextSpec, omniFocusTask);
-    OmniFocus.add(tags, { to: omniFocusTask.tags }); // This must be AFTER push() above, because side effects are awesome.
+}
+
+function createOmniFocusTask(task) {
+    var json = JSON.stringify(task);
+    console.log(`json: ${json}`);
+    shell(`json-to-task '${json}'`, function (text) {
+        console.log(text);
+    })
 }
 
 function run(argv) {
@@ -414,3 +412,4 @@ function run(argv) {
     }
 }
 
+run(process.argv.slice(2));
