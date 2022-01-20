@@ -413,3 +413,7 @@ function run(argv) {
 }
 
 run(process.argv.slice(2));
+
+module.exports = {
+    parseTask: parseTask
+}
