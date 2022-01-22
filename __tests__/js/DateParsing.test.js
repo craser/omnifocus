@@ -7,6 +7,7 @@ function checkExpectedDay(specifiers, expectedDayIndex) {
         expect(date.getTime()).toBeGreaterThanOrEqual(new Date().getTime()); // calls mocked Date.
     })
 }
+
 function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate) {
     var date = TaskParser.parseDate(specifier);
     expect(date.getFullYear()).toBe(expectedYear);
@@ -14,12 +15,16 @@ function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate)
     expect(date.getDate()).toBe(expectedDate);
 }
 
+function checkExpectedTime(specifier, expectedHours, expectedMinutes) {
+    var time = TaskParser.parseTime(specifier);
+    expect(time.hours).toBe(expectedHours);
+    expect(time.minutes).toBe(expectedMinutes);
+}
+
 test('parseTask should correctly interpret "tomorrow" as due date', () => {
     // new Date() always returns 1/1/2021 at 12:00 AM, PST
-    var task = TaskParser.parseTask('test // tomorrow'); // Should be 1/2/2021
-    expect(task.dueDate.getFullYear()).toBe(2021);
-    expect(task.dueDate.getMonth()).toBe(0);
-    expect(task.dueDate.getDay()).toBe(6);
+    checkExpectedDate('', 2021, 0, 1); // check premises
+    checkExpectedDate('tomorrow', 2021, 0, 2);
 });
 
 test('Due date should default to 7pm', () => {
@@ -30,14 +35,23 @@ test('Due date should default to 7pm', () => {
 });
 
 test('Honor ex. 10pm as time spec', () => {
-    function check(inputs, expectedHours) {
-        inputs.forEach((input) => {
-            var task = TaskParser.parseTask(input);
-            expect(task.dueDate.getHours()).toBe(expectedHours);
-        });
-    }
-    check(['a // 9am', 'a // 9:00am'], 9);
-    check(['p // 10pm', 't // 10:00pm'], 22); // PM
+    checkExpectedTime('9am', 9, 0);
+    checkExpectedTime('9:00am', 9, 0);
+    checkExpectedTime('10pm', 22, 0); // PM
+    checkExpectedTime('10:00pm', 22, 0); // PM
+});
+
+test('Honor relative time in hrs', () => {
+    checkExpectedDate('', 2021, 0, 1); // check assumptions
+    checkExpectedTime('9hrs', 9, 0); // basic
+    checkExpectedTime('15hrs', 15, 0); // cross to PM
+    checkExpectedTime('30hrs', 6, 0); // cross to next day
+});
+
+test('Honor relative time in min', () => {
+    checkExpectedDate('', 2021, 0, 1); // check assumptions
+    checkExpectedTime('45min', 0, 45);
+    checkExpectedTime('90min', 1, 30);
 });
 
 /**

@@ -416,5 +416,6 @@ function run(argv) {
 
 module.exports = {
     parseTask: parseTask,
-    parseDate: parseDate
+    parseDate: parseDate,
+    parseTime: parseTime
 }
