@@ -182,7 +182,7 @@ function getTag(OmniFocus, tagName) {
 }
 
 function parseTaskName(string) {
-    var name = string.replace(/\/\/.*$/, '');
+    var name = string.replace(/\b\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
     return name;
 }
 
@@ -415,5 +415,6 @@ function run(argv) {
 //run(process.argv.slice(2));
 
 module.exports = {
-    parseTask: parseTask
+    parseTask: parseTask,
+    parseDate: parseDate
 }

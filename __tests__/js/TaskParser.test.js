@@ -1,41 +1,60 @@
 const TaskParser = require('js/TaskParser');
 
-const INPUT_STRING = "TASK_NAME // .PROJECT.PARENT_TASK tomorrow 10:33am";
+function checkExpectedDay(specifiers, expectedDayIndex) {
+    specifiers.forEach((input) => {
+        var date = TaskParser.parseDate(input);
+        expect(date.getDay()).toBe(expectedDayIndex);
+        expect(date.getTime()).toBeGreaterThanOrEqual(new Date().getTime()); // calls mocked Date.
+    })
+}
 
 test('TaskParser should exist', () => {
     expect(TaskParser).not.toBeNull();
 });
 
-test('parseTask should return a task', () => {
-    var task = TaskParser.parseTask(INPUT_STRING);
-    expect(task).not.toBeNull();
-    expect(task.name).toBe('TASK_NAME ');
-    expect(task.contextSpec).toEqual(['PROJECT', 'PARENT_TASK']);
+test('parseTask should trim the name', () => {
+    var inputs = [
+        "task_name",
+        "task_name //",
+        "task_name // tomorrow",
+        "task_name // .house :home",
+        "task_name// .work.THX_1138 tomorrow 10:30am :errands"
+    ];
+    inputs.forEach((input) => {
+        var task = TaskParser.parseTask(input);
+        expect(task.name).toBe('task_name');
+    });
 });
 
-test('Date should be mocked.', () => {
-    var now = new Date();
-    expect(now.getTime()).toBe(1466424490000);
+test('parseTask should find the right tag names', () => {
+    var inputs = [
+        'test // :first :second :third',
+        'test // :first :second :third tomorrow',
+        'test // :first :second :third monday 10:34pm',
+        'test // :first :second :third .work.static',
+        'test:bonkers // :first :second :third .work.static',
+        'test // :first :second :third monday 10:34pm /** note goes here',
+        'test // :first :second :third .work.static /** note goes here'
+    ];
+    inputs.forEach((input) => {
+        var task = TaskParser.parseTask(input);
+        expect(task.primaryTagName).toBe('first');
+        expect(task.tagNames).toEqual(['first', 'second', 'third']);
+    });
 });
 
-/*
-test('testing the mock Date constructor', () => {
-    const mockDate = new Date(1466424490000)
-    const spy = jest
-        .spyOn(global, 'Date')
-        .mockImplementation(() => mockDate)
-
-    console.log('Mocked:   ', new Date().getTime())
-    spy.mockRestore()
-
-    console.log('Restored: ', new Date().getTime())
+test('parseTask should find the right note', () => {
+    var inputs = [
+        'test // /** note goes here',
+        'test // :first :second :third tomorrow /** note goes here',
+        'test // :first :second :third monday 10:34pm /** note goes here',
+        'test // :first :second :third .work.static /** note goes here',
+        'test:bonkers // :first :second :third .work.static/** note goes here',
+    ];
+    inputs.forEach((input) => {
+        var task = TaskParser.parseTask(input);
+        expect(task.note).toBe('note goes here');
+    });
 });
-*/
 
-/*
-test('parseTask should default to the correct project', () => {
-    var task = TaskParser.parseTask("test task");
-    expect(task.contextSpec).toEqual('Work');
-});
-*/
 
