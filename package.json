@@ -24,9 +24,11 @@
   "jest": {
     "testRegex": "__tests__/.*\\.test.js$",
     "collectCoverage": true,
+    "setupFiles": [
+      "./__tests__/JestSetup.js"
+    ],
     "moduleFileExtensions": [
-      "js",
-      ""
+      "js"
     ],
     "modulePaths": [
       "<rootDir>"
