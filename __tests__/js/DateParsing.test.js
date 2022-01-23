@@ -110,6 +110,31 @@ test('Honor specifiers for Sunday', () => {
     checkExpectedDay(specifiers, 0);
 });
 
+test('If an execption is thrown during date parsing, return the default date.', () => {
+    var originalTest = RegExp.prototype.test; // Save the original implementation
+    try {
+        RegExp.prototype.test = function () { throw "MOCK"; }; // Force the error
+        checkExpectedDate('', 2021, 0, 1);
+    }
+    finally {
+        RegExp.prototype.test = originalTest; // Restore the original.
+        expect(/test/.test('test')).toBe(true); // Because I'm paranoid.
+    }
+});
+
+test('If an exception is thrown looking for days of the week, return false.', () => {
+    var originalFind = Array.prototype.find;
+    try {
+        Array.prototype.find = function () { throw "MOCK"; };
+        checkExpectedDate('wednesday', 2021, 0, 1); // Should return default date.
+    }
+    finally {
+        Array.prototype.find = originalFind;
+        [1, 2, 3].find((x) => true); // paranoia
+    }
+
+});
+
 /**
  * Should support relative time in days. Ex: "10days"
  * (Also supports the typo "7day")

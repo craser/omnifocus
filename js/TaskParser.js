@@ -132,12 +132,6 @@ function parseTime(meta) {
     }
 }
 
-function getDefaultDueDate() {
-    var date = new Date();
-    date.setHours(19, 0, 0); // 07:00 PM
-    return date;
-}
-
 function parseDueDate(string) {
     try {
         var meta = getMeta(string);
@@ -150,7 +144,7 @@ function parseDueDate(string) {
         }
         return date;
     } catch (e) {
-        var date = getDefaultDueDate();
+          var date = getDefaultDate();
         return date;
     }
 }
