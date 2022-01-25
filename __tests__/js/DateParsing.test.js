@@ -1,22 +1,22 @@
-const TaskParser = require('js/TaskParser');
+const DateParser = require('js/DateParser');
 
 function checkExpectedDay(specifiers, expectedDayIndex) {
     specifiers.forEach((input) => {
-        var date = TaskParser.parseDate(input);
+        var date = new DateParser().parseDate(input);
         expect(date.getDay()).toBe(expectedDayIndex);
         expect(date.getTime()).toBeGreaterThanOrEqual(new Date().getTime()); // calls mocked Date.
     })
 }
 
 function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate) {
-    var date = TaskParser.parseDate(specifier);
+    var date = new DateParser().parseDate(specifier);
     expect(date.getFullYear()).toBe(expectedYear);
     expect(date.getMonth()).toBe(expectedMonth);
     expect(date.getDate()).toBe(expectedDate);
 }
 
 function checkExpectedTime(specifier, expectedHours, expectedMinutes) {
-    var time = TaskParser.parseTime(specifier);
+    var time = new DateParser().parseTime(specifier);
     expect(time.hours).toBe(expectedHours);
     expect(time.minutes).toBe(expectedMinutes);
 }
@@ -25,13 +25,6 @@ test('parseTask should correctly interpret "tomorrow" as due date', () => {
     // new Date() always returns 1/1/2021 at 12:00 AM, PST
     checkExpectedDate('', 2021, 0, 1); // check premises
     checkExpectedDate('tomorrow', 2021, 0, 2);
-});
-
-test('Due date should default to 7pm', () => {
-    // new Date() always returns 1/1/2021 at 12:00 AM, PST
-    var task = TaskParser.parseTask('test'); // Should be 1/2/2021
-    expect(task.dueDate.getHours()).toBe(19);
-    expect(task.dueDate.getMinutes()).toBe(0);
 });
 
 test('Honor ex. 10pm as time spec', () => {
@@ -135,12 +128,21 @@ test('If an exception is thrown looking for days of the week, return false.', ()
 
 });
 
+test('Default date should be today at 7pm', () => {
+    var date = new DateParser().getDefaultDate();
+    expect(date.getFullYear()).toBe(2021);
+    expect(date.getMonth()).toBe(0);
+    expect(date.getDate()).toBe(1);
+    expect(date.getHours()).toBe(19);
+    expect(date.getMinutes()).toBe(0);
+    expect(date.getSeconds()).toBe(0);
+});
+
 /**
  * Should support relative time in days. Ex: "10days"
  * (Also supports the typo "7day")
  */
 test('Honor relative time in days', () => {
-    checkExpectedDate('', 2021, 0, 1); // checking default date
     checkExpectedDate('10days', 2021,0, 11);
     checkExpectedDate('10day', 2021, 0, 11); // check the typo
     checkExpectedDate('35days', 2021, 1, 5);

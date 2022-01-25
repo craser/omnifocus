@@ -1,60 +1,150 @@
 const TaskParser = require('js/TaskParser');
 
-function checkExpectedDay(specifiers, expectedDayIndex) {
-    specifiers.forEach((input) => {
-        var date = TaskParser.parseDate(input);
-        expect(date.getDay()).toBe(expectedDayIndex);
-        expect(date.getTime()).toBeGreaterThanOrEqual(new Date().getTime()); // calls mocked Date.
-    })
+function expectDateTime(obj, year, month, date, hours, minutes, seconds) {
+    expect(obj.getFullYear()).toBe(year);
+    expect(obj.getMonth()).toBe(month);
+    expect(obj.getDate()).toBe(date);
+    expect(obj.getHours()).toBe(hours);
+    expect(obj.getMinutes()).toBe(minutes);
+    expect(obj.getSeconds()).toBe(seconds || 0);
 }
 
-test('TaskParser should exist', () => {
-    expect(TaskParser).not.toBeNull();
-});
+function expectTask(task, expected) {
+    expect(task.name).toBe(expected.name);
+    expect(task.tagNames).toEqual(expected.tagNames);
+    expect(task.note).toBe(expected.note);
+    expect(task.flagged).toBe(expected.flagged);
+    expect(task.contextSpec).toEqual(expected.contextSpec);
+    expect(task.completed).toBe(expected.completed);
+    expect(task.primaryTagName).toBe(expected.primaryTagName);
+}
 
-test('parseTask should trim the name', () => {
-    var inputs = [
-        "task_name",
-        "task_name //",
-        "task_name // tomorrow",
-        "task_name // .house :home",
-        "task_name// .work.THX_1138 tomorrow 10:30am :errands"
-    ];
-    inputs.forEach((input) => {
-        var task = TaskParser.parseTask(input);
-        expect(task.name).toBe('task_name');
+test('Reasonable defaults', () => {
+    var parser = new TaskParser();
+    var task = parser.parseTask('task');
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null
     });
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
 });
 
-test('parseTask should find the right tag names', () => {
-    var inputs = [
-        'test // :first :second :third',
-        'test // :first :second :third tomorrow',
-        'test // :first :second :third monday 10:34pm',
-        'test // :first :second :third .work.static',
-        'test:bonkers // :first :second :third .work.static',
-        'test // :first :second :third monday 10:34pm /** note goes here',
-        'test // :first :second :third .work.static /** note goes here'
-    ];
-    inputs.forEach((input) => {
-        var task = TaskParser.parseTask(input);
-        expect(task.primaryTagName).toBe('first');
-        expect(task.tagNames).toEqual(['first', 'second', 'third']);
+test('Sample 1', () => {
+    var input = 'task name // :tagname1, :tagname2 .project 5/11/2023 11:22pm';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: '',
+        flagged: false,
+        contextSpec: ['project'],
+        completed: false,
+        primaryTagName: 'tagname1'
     });
-});
+    expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
+})
 
-test('parseTask should find the right note', () => {
-    var inputs = [
-        'test // /** note goes here',
-        'test // :first :second :third tomorrow /** note goes here',
-        'test // :first :second :third monday 10:34pm /** note goes here',
-        'test // :first :second :third .work.static /** note goes here',
-        'test:bonkers // :first :second :third .work.static/** note goes here',
-    ];
-    inputs.forEach((input) => {
-        var task = TaskParser.parseTask(input);
-        expect(task.note).toBe('note goes here');
+test('Sample 2', () => {
+    var input = 'task name // :tagname1, :tagname2 .project.task 5/11/2023 11:22pm';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: '',
+        flagged: false,
+        contextSpec: ['project', 'task'],
+        completed: false,
+        primaryTagName: 'tagname1'
     });
-});
+    expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
+})
 
+test('Sample 3', () => {
+    var input = 'task name // :tagname1, :tagname2 .project.task 5/11/2023 11:22pm /** https://foo.bar.zaz';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: 'https://foo.bar.zaz',
+        flagged: false,
+        contextSpec: ['project', 'task'],
+        completed: false,
+        primaryTagName: 'tagname1'
+    });
+    expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
+})
+
+test('Sample 4', () => {
+    var input = 'task name // :tagname1, :tagname2 .project.task 5/11/2023 11:22pm flag done';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: '',
+        flagged: true,
+        contextSpec: ['project', 'task'],
+        completed: true,
+        primaryTagName: 'tagname1'
+    });
+    expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
+})
+
+test('Sample 5', () => {
+    var input = 'task name // :tagname1, :tagname2 .project.task 5/11 11am';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: '',
+        flagged: false,
+        contextSpec: ['project', 'task'],
+        completed: false,
+        primaryTagName: 'tagname1'
+    });
+    expectDateTime(task.dueDate, 2021, 4, 11, 11, 0);
+})
+
+test('Sample 6', () => {
+    var input = 'task name // :tagname1, :tagname2 .project.task tuesday 11am';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1', 'tagname2'],
+        note: '',
+        flagged: false,
+        contextSpec: ['project', 'task'],
+        completed: false,
+        primaryTagName: 'tagname1'
+    });
+    expectDateTime(task.dueDate, 2021, 0, 5, 11, 0);
+})
+
+
+
+test('Sample 7', () => {
+    var input = 'task name // :tagname1 tuesday';
+    var parser = new TaskParser();
+    var task = parser.parseTask(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: ['tagname1'],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: 'tagname1'
+    });
+    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
+})
 
