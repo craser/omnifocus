@@ -12,7 +12,7 @@ function shell(cmd, f) {
 function createOmniFocusTask(task) {
     var json = JSON.stringify(task);
     console.log(`json: ${json}`);
-    shell(`json-to-task '${json}'`, function (text) {
+    shell(`json-to-task.js '${json}'`, function (text) {
         console.log(text);
     })
 }
@@ -23,7 +23,7 @@ function run(argv) {
         console.log(`creating new task: ${new Date()}`);
         console.log(`input: "${argv[0]}"`);
         var string = argv[0];
-        var task = new TaskParser().parseTask(string);
+        var task = new TaskParser().parse(string);
         createOmniFocusTask(task);
         console.log('task created');
     } catch (e) {

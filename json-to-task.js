@@ -118,7 +118,6 @@ function createOmniFocusTask(task) {
     var OmniFocus = Application('OmniFocus'); // TODO: Move all references to "string" above this line, and all refs to "Omnifocus" below this line.
     var primaryTag = parsePrimaryTag(OmniFocus, task.primaryTagName);
     var tags = parseTags(OmniFocus, task.tagNames);
-    //logTaskData(taskName, primaryTag, tags, dueDate);
     var omniFocusTask = OmniFocus.Task({
         name: task.name,
         primaryTag: primaryTag,
@@ -158,3 +157,6 @@ function run(argv) {
     }
 }
 
+if (typeof module != 'undefined') {
+    module.exports = run;
+}
