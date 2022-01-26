@@ -127,9 +127,8 @@ function parseTime(meta) {
     }
 }
 
-function parseDueDate(string) {
+function parseDueDate(meta) {
     try {
-        var meta = getMeta(string);
         var date = parseDate(meta);
         var time = parseTime(meta);
         if (time) {

@@ -1,5 +1,6 @@
 #!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
 const DateParser = require('./DateParser');
+const ContextParser = require('./ContextParser');
 
 function parseTaskName(string) {
     var name = string.replace(/\b\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
@@ -73,28 +74,15 @@ function parseNote(string) {
     return note;
 }
 
-function parseContextSpec(string) {
-    var meta = getMeta(string);
-
-    var regex = /^.*?\.([^\s]+)\b.*$/;
-    if (regex.test(string)) {
-        var contextSpec = meta.replace(regex, '$1')
-            .split('.')
-            .filter(x => x != '');
-        return contextSpec;
-    } else {
-        return [];
-    }
-}
-
 function parseTask(string) {
+    var meta = getMeta(string);
     var task = {
         name: parseTaskName(string),
         tagNames: getTagNames(string),
         note: parseNote(string),
         dueDate: new DateParser().parseDueDate(string),
         flagged: parseIsFlagged(string),
-        contextSpec: parseContextSpec(string),
+        contextSpec: new ContextParser().parse(meta),
         completed: parseIsCompleted(string),
         primaryTagName: getPrimaryTagName(string)
     }
@@ -102,7 +90,7 @@ function parseTask(string) {
 }
 
 function TaskParser() {
-    this.parseTask = parseTask;
+    this.parse = parseTask;
 }
 
 module.exports = TaskParser;
