@@ -11,7 +11,7 @@ function expectDateTime(obj, year, month, date, hours, minutes, seconds) {
 
 function expectTask(task, expected) {
     expect(task.name).toBe(expected.name);
-    expect(task.tagNames).toEqual(expected.tagNames);
+    expect(task.tagNames.sort()).toEqual(expected.tagNames.sort());
     expect(task.note).toBe(expected.note);
     expect(task.flagged).toBe(expected.flagged);
     expect(task.contextSpec).toEqual(expected.contextSpec);
@@ -177,4 +177,11 @@ test('Phone number support in task & notes', () => {
         primaryTagName: null
     });
     expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+})
+
+test("Exclamation point shouldn't break parsing.", () => {
+    var input = "I want to be an Air Force Ranger! // .house :home";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.name).toBe('I want to be an Air Force Ranger!');
 })

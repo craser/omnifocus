@@ -1,4 +1,4 @@
-const JsonToTask = require('json-to-task');
+const jsonToTask = require('json-to-task');
 
 /**
  * TODO:
@@ -7,7 +7,37 @@ const JsonToTask = require('json-to-task');
  *   - mock every damn thing
  */
 
+function MockTag(name) {
+    this.name = name;
+}
 
-test('not null', () => {
-    expect(JsonToTask).not.toBeNull();
+var MockOmniFocus = {
+    defaultDocument: {
+        Tag: function (opts) {
+            this.name = opts.name;
+        },
+        Task: function (name) {
+            this.name = name;
+        },
+        tags: {
+            whose: function () {
+                return [new MockTag('mocktag')];
+            }
+        }
+
+    }
+};
+
+beforeAll(() => {
+    global.Application = function() {
+        return MockOmniFocus;
+    };
+});
+
+function runJsonToTask(input) {
+    return jsonToTask([input]);
+}
+
+test('can run', () => {
+    runJsonToTask('test // .house :home');
 })
