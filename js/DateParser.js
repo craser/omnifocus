@@ -122,6 +122,13 @@ function parseTime(meta) {
             minutes: minutes,
             seconds: 0
         };
+    } else if (/\bnow\b/i.test(meta)) {
+        var now = new Date();
+        return {
+            hours: now.getHours(),
+            minutes: now.getMinutes(),
+            seconds: 0
+        };
     } else {
         return null;
     }

@@ -21,6 +21,11 @@ function checkExpectedTime(specifier, expectedHours, expectedMinutes) {
     expect(time.minutes).toBe(expectedMinutes);
 }
 
+test('parseTask should correctly interpret "now" as due date', () => {
+    var now = new Date();
+    checkExpectedTime('now', now.getHours(), now.getMinutes());
+});
+
 test('parseTask should correctly interpret "tomorrow" as due date', () => {
     // new Date() always returns 1/1/2021 at 12:00 AM, PST
     checkExpectedDate('', 2021, 0, 1); // check premises
