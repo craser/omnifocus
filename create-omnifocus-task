@@ -2,9 +2,22 @@
 
 const { exec } = require('child_process');
 const TaskParser = require('./js/TaskParser');
+const path = require('path');
+
+function getAbsolutePath(cmd) {
+    let basename = path.basename(cmd);
+    if (basename == cmd) {
+        let absolute = path.join(process.cwd(), cmd);
+        return absolute;
+    } else {
+        return cmd;
+    }
+}
 
 function shell(cmd, f) {
     exec(cmd, function (error, stdout, stderr) {
+        console.log(error);
+        console.log(stderr.trim());
         f(stdout.trim());
     });
 }
@@ -12,9 +25,10 @@ function shell(cmd, f) {
 function createOmniFocusTask(task) {
     var json = JSON.stringify(task);
     console.log(`json: ${json}`);
-    shell(`json-to-task.js '${json}'`, function (text) {
+    var script = getAbsolutePath('json-to-task.js');
+    shell(`${script} '${json}'`, function (text) {
         console.log(text);
-    })
+    });
 }
 
 function run(argv) {
@@ -32,4 +46,11 @@ function run(argv) {
     }
 }
 
+function initEnv(process) {
+    let script = process.argv[1];
+    let dir = path.dirname(script);
+    process.chdir(dir);
+}
+
+initEnv(process);
 run(process.argv.slice(2));
