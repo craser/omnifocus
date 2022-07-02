@@ -185,3 +185,16 @@ test("Exclamation point shouldn't break parsing.", () => {
     var task = parser.parse(input);
     expect(task.name).toBe('I want to be an Air Force Ranger!');
 })
+
+/**
+ * TODO: Should mock out Date() to guarantee that time lines up. Danger if this runs in last few ms before
+ * new minute.
+ */
+test("Support 'now' as due date", () => {
+    var input = "Poop // now";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    var now = new Date();
+    expect(task.dueDate.getHours()).toBe(now.getHours());
+    expect(task.dueDate.getMinutes()).toBe(now.getMinutes());
+});
