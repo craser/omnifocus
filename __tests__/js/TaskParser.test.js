@@ -198,3 +198,11 @@ test("Support 'now' as due date", () => {
     expect(task.dueDate.getHours()).toBe(now.getHours());
     expect(task.dueDate.getMinutes()).toBe(now.getMinutes());
 });
+
+test('Should ignore dates in description, honor dates in metadata', () => {
+    var input = "Ignore this date 9/10 // 11/12";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+
+    expectDateTime(task.dueDate, 2021, 10, 12, 19, 0);
+});

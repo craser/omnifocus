@@ -50,7 +50,7 @@ function parseTask(string) {
         name: parseTaskName(string),
         tagNames: getTagNames(meta),
         note: new NoteParser().parse(string),
-        dueDate: new DateParser().parseDueDate(string),
+        dueDate: new DateParser().parseDueDate(meta),
         flagged: parseIsFlagged(string),
         contextSpec: new ContextParser().parse(meta),
         completed: parseIsCompleted(string),
