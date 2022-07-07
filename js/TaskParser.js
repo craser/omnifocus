@@ -2,7 +2,7 @@
 const DateParser = require('./DateParser');
 const ContextParser = require('./ContextParser');
 const NoteParser = require('./NoteParser');
-const RulesManager = require('./RuleManger');
+const RulesManager = require('./RuleManager');
 
 function parseTaskName(string) {
     var name = string.replace(/\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.

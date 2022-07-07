@@ -233,3 +233,27 @@ test('Should set the due date on :waiting tasks to 10pm', () => {
     var task = parser.parse(input);
     expectDateTime(task.dueDate, 2021, 0, 1, 22, 0);
 });
+
+test('If the context is a JIRA ticket, context should be ["work", "Jira Ticket"]', () => {
+    var input = "jira task // .THX-1138";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('work');
+    expect(task.contextSpec[1]).toEqual('THX-1138');
+});
+
+test('Should default context to .work.general', () => {
+    var input = "task";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('work');
+    expect(task.contextSpec[1]).toEqual('general');
+});
+
+test('Should add a default parent task of "general" to tasks in Work project', () => {
+    var input = "task // .work";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('work');
+    expect(task.contextSpec[1]).toEqual('general');
+})
