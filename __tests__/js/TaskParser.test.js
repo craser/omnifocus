@@ -163,7 +163,6 @@ test('Sample 8', () => {
 })
 
 test('Phone number support in task & notes', () => {
-
     var input = "Don't lose that number 8008675309 // /** (805) 123-1234";
     var parser = new TaskParser();
     var task = parser.parse(input);
@@ -177,7 +176,7 @@ test('Phone number support in task & notes', () => {
         primaryTagName: null
     });
     expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
-})
+});
 
 test("Exclamation point shouldn't break parsing.", () => {
     var input = "I want to be an Air Force Ranger! // .house :home";
