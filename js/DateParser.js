@@ -22,6 +22,8 @@ function DayOfWeek(name, pattern, index) {
 function getDefaultDate() {
     var date = new Date();
     date.setHours(19, 0, 0);
+    date.isDefaultDate = true;
+    date.isDefaultTime = true;
     return date;
 }
 
@@ -66,6 +68,7 @@ function parseDate(meta) {
             date.setMonth(parseInt(month) - 1);
             date.setDate(day);
             date.setFullYear(year);
+            date.isDefaultDate = false;
             return date;
         } else {
             return getDefaultDate();
@@ -139,8 +142,10 @@ function parseDueDate(meta) {
         var date = parseDate(meta);
         var time = parseTime(meta);
         if (time) {
+            date.isDefaultTime = false;
             date.setHours(time.hours, time.minutes, time.seconds);
         } else {
+            date.isDefaultTime = true;
             date.setHours(19, 0, 0); // 07:00 PM // TODO: Pull h, m, s from getDefaultDate().
         }
         return date;

@@ -24,10 +24,10 @@
  * Going to hard-code this for now & refactor later in my copious free time.
  *
  * RULES:
- *     - default project: work
- *     - default parent task: general
- *     - default due date: today
- *     - default due time: 7pm
+ *     ✓ default project: work
+ *     ✓ default parent task: general
+ *     ✓ default due date: today (implemented in DateParser)
+ *     ✓ default due time: 7pm (in DateParser)
  *     - :errands ➤ due at 11am
  *     - .work ➤ due at 3pm
  *     - :housekeeping ➤ due at 9pm
@@ -40,7 +40,7 @@
  * @return {{}}
  */
 function putJiraTicketsInWorkProject(task) {
-    if (isJiraTicketContext(task.contextSpec)) {
+    if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.contextSpec)[0])) {
         task.contextSpec.unshift('work');
     }
     return task;
@@ -69,23 +69,36 @@ function tagExpectedTasksAsWaiting(task) {
     return task;
 }
 
-function autoSetDueDate(task) {
-    // FIXME: This is presumed to be WORK, since we "know" that json-to-task.js will
-    // default this to the .work project.
-    if (!task.contextSpec || task.contextSpec.length == 0) {
-        task.dueDate.setHours(15);
-    } else if (hasTag(task, 'errands')) {
+function errandsDueAtEleven(task) {
+    if (hasTag(task, 'errands') && task.dueDate.isDefaultTime) {
         task.dueDate.setHours(11);
-    } else if (hasTag(task, 'housekeeping')) {
-        task.dueDate.setHours(19);
-    } else if (hasTag(task, 'waiting')) {
-        task.dueDate.setHours(22);
+        task.dueDate.isDefaultTime = false;
     }
     return task;
 }
 
-function isJiraTicketContext(contextSpec) {
-    return /\b\w\w\w\w?-\d\d\d\d?\b/.test(contextSpec[0]);
+function workTasksDueAtThreePm(task) {
+    if (/\bwork\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
+        task.dueDate.setHours(15);
+        task.dueDate.isDefaultTime = false;
+    }
+    return task;
+}
+
+function housekeepingTasksDueAtNinePm(task) {
+    if (/\bhousekeeping\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
+        task.dueDate.setHours(21);
+        task.dueDate.isDefaultTime = false;
+    }
+    return task;
+}
+
+function waitingTasksDueAtTenPm(task) {
+    if (hasTag(task, 'waiting') && task.dueDate.isDefaultTime) {
+        task.dueDate.setHours(22);
+        task.dueDate.isDefaultTime = false;
+    }
+    return task;
 }
 
 function hasTag(task, tag) {
@@ -105,7 +118,10 @@ function RuleManager() {
         defaultEmptyContextToWorkProject,
         defaultWorkTasksToGeneralParentTask,
         tagExpectedTasksAsWaiting,
-        autoSetDueDate
+        workTasksDueAtThreePm,
+        housekeepingTasksDueAtNinePm,
+        waitingTasksDueAtTenPm,
+        errandsDueAtEleven
     ];
     this.applyRules = applyRules;
 }

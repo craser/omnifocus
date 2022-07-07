@@ -120,6 +120,25 @@ test('If an execption is thrown during date parsing, return the default date.', 
     }
 });
 
+test('If no date/time is specified, returned date should be flagged with isDefaultDate & isDefaultTime', () => {
+     // default both date and time
+    let date = new DateParser().parseDueDate('');
+    expect(date.isDefaultDate).toBeTruthy();
+    expect(date.isDefaultTime).toBeTruthy();
+});
+
+test('If only a time is specified, date should be flagged with isDefaultDate, but NOT isDefaultTime', () => {
+    let date = new DateParser().parseDueDate('4pm');
+    expect(date.isDefaultDate).toBeTruthy();
+    expect(date.isDefaultTime).toBeFalsy();
+});
+
+test('If only a date is specified, date should be flagged with isDefaultTime, but NOT isDefaultDate', () => {
+    let date = new DateParser().parseDueDate('8/2/2022');
+    expect(date.isDefaultDate).toBeFalsy();
+    expect(date.isDefaultTime).toBeTruthy();
+});
+
 test('If an exception is thrown looking for days of the week, return false.', () => {
     var originalFind = Array.prototype.find;
     try {
