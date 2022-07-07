@@ -31,7 +31,7 @@ test('Reasonable defaults', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
 });
 
 test('Sample 1', () => {
@@ -143,7 +143,7 @@ test('Sample 7', () => {
         completed: false,
         primaryTagName: 'tagname1'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
+    expectDateTime(task.dueDate, 2021, 0, 5, 15, 0);
 })
 
 test('Sample 8', () => {
@@ -159,7 +159,7 @@ test('Sample 8', () => {
         completed: false,
         primaryTagName: 'waiting'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
+    expectDateTime(task.dueDate, 2021, 0, 5, 15, 0);
 })
 
 test('Phone number support in task & notes', () => {
@@ -176,7 +176,7 @@ test('Phone number support in task & notes', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
 })
 
 test("Exclamation point shouldn't break parsing.", () => {
@@ -191,7 +191,7 @@ test("Exclamation point shouldn't break parsing.", () => {
  * new minute.
  */
 test("Support 'now' as due date", () => {
-    var input = "Poop // now";
+    var input = "Poop // .house :home now";
     var parser = new TaskParser();
     var task = parser.parse(input);
     var now = new Date();
@@ -203,6 +203,33 @@ test('Should ignore dates in description, honor dates in metadata', () => {
     var input = "Ignore this date 9/10 // 11/12";
     var parser = new TaskParser();
     var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 10, 12, 15, 0);
+});
 
-    expectDateTime(task.dueDate, 2021, 10, 12, 19, 0);
+test('Should auto-set the due date on .work tasks to 3pm', () => {
+    var input = "work task"; // .work project is currently, unfortunately, detected as an empty context
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
+});
+
+test('Should set due date on errands to 11am', () => {
+    var input = "errand // .house :errands";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
+});
+
+test('Should set due date on :housekeeping tasks to 9pm', () => {
+    var input = "housekeeping task // .house :home";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+});
+
+test('Should set the due date on :waiting tasks to 10pm', () => {
+    var input = "waiting task // .house :home :waiting";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 22, 0);
 });
