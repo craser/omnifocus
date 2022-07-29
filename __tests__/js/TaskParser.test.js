@@ -1,9 +1,13 @@
 const TaskParser = require('js/TaskParser');
 
-function expectDateTime(obj, year, month, date, hours, minutes, seconds) {
+function expectDate(obj, year, month, date) {
     expect(obj.getFullYear()).toBe(year);
     expect(obj.getMonth()).toBe(month);
     expect(obj.getDate()).toBe(date);
+}
+
+function expectDateTime(obj, year, month, date, hours, minutes, seconds) {
+    expectDate(obj, year, month, date);
     expect(obj.getHours()).toBe(hours);
     expect(obj.getMinutes()).toBe(minutes);
     expect(obj.getSeconds()).toBe(seconds || 0);
@@ -284,4 +288,36 @@ test('Should add a default parent task of "general" to tasks in Work project', (
     var task = parser.parse(input);
     expect(task.contextSpec[0]).toEqual('work');
     expect(task.contextSpec[1]).toEqual('general');
+});
+
+test('Should respect relative days, result in due date of 8/5/2028', () => {
+    var input = "task // 8/3/2028 +2days";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 7, 5);
+    expect(task.dueDate.isDefaultDate).toBeFalsy();
+});
+
+test('Should respect relative days, result in due date of 7/31/2028', () => {
+    var input = "task // 8/3/2028 -4days";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 6, 30);
+    expect(task.dueDate.isDefaultDate).toBeFalsy();
+});
+
+test('Should respect relative weeks, result in due date of 8/17/2028', () => {
+    var input = "task // 8/3/2028 +2weeks";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 7, 17);
+    expect(task.dueDate.isDefaultDate).toBeFalsy();
+});
+
+test('Should respect relative weeks, result in due date of 7/31/2028', () => {
+    var input = "task // 8/3/2028 -1week";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 6, 27);
+    expect(task.dueDate.isDefaultDate).toBeFalsy();
 });

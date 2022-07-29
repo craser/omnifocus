@@ -46,36 +46,51 @@ function parseDayOfWeek(meta) {
  */
 function parseDate(meta) {
     try {
-        if (/\d+\s?days?/i.test(meta)) {
-            var line = meta.match(/(\d+)\s?days?/i);
-            var days = parseInt(line[1]);
-            var date = new Date();
-            date.setDate(date.getDate() + days);
-            return date;
-        } else if (/tomorrow/i.test(meta)) {
-            var date = new Date();
-            date.setDate(date.getDate() + 1);
-            return date;
-        } else if (hasDayOfWeek(meta)) {
-            var date = parseDayOfWeek(meta);
-            return date;
-        } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
-            var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
-            var month = line[1];
-            var day = line[2];
-            var year = line[4] || new Date().getFullYear();
-            var date = getDefaultDate();
-            date.setMonth(parseInt(month) - 1);
-            date.setDate(day);
-            date.setFullYear(year);
-            date.isDefaultDate = false;
-            return date;
-        } else {
-            return getDefaultDate();
-        }
+        let baseDate = parseBaseDate(meta);
+        let date = applyDateModifiers(baseDate, meta);
+        return date;
     } catch (e) {
         return getDefaultDate();
     }
+}
+
+function parseBaseDate(meta) {
+    if (/tomorrow/i.test(meta)) {
+        var date = new Date();
+        date.setDate(date.getDate() + 1);
+        return date;
+    } else if (hasDayOfWeek(meta)) {
+        var date = parseDayOfWeek(meta);
+        return date;
+    } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
+        var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
+        var month = line[1];
+        var day = line[2];
+        var year = line[4] || new Date().getFullYear();
+        var date = getDefaultDate();
+        date.setMonth(parseInt(month) - 1);
+        date.setDate(day);
+        date.setFullYear(year);
+        date.isDefaultDate = false;
+        return date;
+    } else {
+        return getDefaultDate();
+    }
+}
+
+function applyDateModifiers(date, meta) {
+    if (/[+-]?\d+\s?days?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?days?/i);
+        var days = parseInt(line[1]);
+        date.setDate(date.getDate() + days);
+        date.isDefaultDate = false;
+    } else if (/[+-]?\d+\s?weeks?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?weeks?/i);
+        var days = parseInt(line[1]) * 7;
+        date.setDate(date.getDate() + days);
+        date.isDefaultDate = false;
+    }
+    return date;
 }
 
 function hasDayOfWeek(meta) {

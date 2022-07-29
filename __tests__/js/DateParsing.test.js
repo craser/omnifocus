@@ -173,6 +173,11 @@ test('Honor relative time in days', () => {
     checkExpectedDate('90days', 2021, 3, 1);
 });
 
+test('Honor relative time in weeks', () => {
+    checkExpectedDate('1week', 2021,0, 8);
+    checkExpectedDate('3weeks', 2021,0, 22);
+});
+
 test('Honor m/d/y date specifiers', () => {
     // Without a year, should parse to a date in the future.
     checkExpectedDate('5/15', 2021, 4, 15);
@@ -180,3 +185,4 @@ test('Honor m/d/y date specifiers', () => {
     // CAN specify a date in the past.
     checkExpectedDate('5/15/2002', 2002, 4, 15);
 });
+
