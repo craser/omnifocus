@@ -251,6 +251,13 @@ test('Should set the time on .housekeeping tasks to 9pm', () => {
     expectDateTime(task.dueDate, 2021, 0, 1, 21, 0);
 });
 
+test('Should set the time on .house :home tasks to 9pm', () => {
+    var input = 'work task // .house :home';
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 21, 0);
+});
+
 test('Should NOT set the time on .housekeeping tasks if time is specified', () => {
     var input = 'work task // .housekeeping 5am';
     var parser = new TaskParser();
@@ -320,4 +327,16 @@ test('Should respect relative weeks, result in due date of 7/31/2028', () => {
     var task = parser.parse(input);
     expectDate(task.dueDate, 2028, 6, 27);
     expect(task.dueDate.isDefaultDate).toBeFalsy();
+});
+
+
+/**
+ * This feature is janky AF & I don't like it.
+ */
+test('Honor :notdue tag, indicating that no due date should be added', () => {
+    var input = "task // :notdue";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.dueDate).toBeNull();
+    expect(task.tagNames).not.toContain('notdue');
 });

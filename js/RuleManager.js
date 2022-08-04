@@ -28,10 +28,11 @@
  *     ✓ default parent task: general
  *     ✓ default due date: today (implemented in DateParser)
  *     ✓ default due time: 7pm (in DateParser)
- *     - :errands ➤ due at 11am
- *     - .work ➤ due at 3pm
- *     - :housekeeping ➤ due at 9pm
- *     - :waiting ➤ due at 10pm
+ *     ✓ :errands ➤ due at 11am
+ *     ✓ .work ➤ due at 3pm
+ *     ✓ .housekeeping ➤ due at 9pm
+ *     ✓ :waiting ➤ due at 10pm
+ *     ✓ :notdue ➤ remove due date, AND remove :notdue tag
  *
  * TODO: (follow-up)
  *     - remove default date & time logic from DateParser
@@ -86,7 +87,7 @@ function workTasksDueAtThreePm(task) {
 }
 
 function housekeepingTasksDueAtNinePm(task) {
-    if (/\bhousekeeping\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
+    if (/\bhouse(keeping)?\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
         task.dueDate.setHours(21);
         task.dueDate.isDefaultTime = false;
     }
@@ -101,8 +102,20 @@ function waitingTasksDueAtTenPm(task) {
     return task;
 }
 
+function notDueTasksHaveNoDueDate(task) {
+    if (hasTag(task, 'notdue')) {
+        task.dueDate = null;
+        removeTag(task, 'notdue');
+    }
+    return task;
+}
+
 function hasTag(task, tag) {
     return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
+}
+
+function removeTag(task, tag) {
+    task.tagNames = task.tagNames.filter(name => name != tag);
 }
 
 function applyRules(task) {
@@ -121,7 +134,8 @@ function RuleManager() {
         workTasksDueAtThreePm,
         housekeepingTasksDueAtNinePm,
         waitingTasksDueAtTenPm,
-        errandsDueAtEleven
+        errandsDueAtEleven,
+        notDueTasksHaveNoDueDate
     ];
     this.applyRules = applyRules;
 }
