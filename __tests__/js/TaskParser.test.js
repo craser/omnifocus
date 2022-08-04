@@ -281,6 +281,14 @@ test('If the context is a JIRA ticket, context should be ["work", "Jira Ticket"]
     expect(task.contextSpec[1]).toEqual('THX-1138');
 });
 
+test('Should auto-detect Jira tickets & put in context.', () => {
+    var input = "LOE for THX-1138";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('work');
+    expect(task.contextSpec[1]).toEqual('THX-1138');
+});
+
 test('Should default context to .work.general', () => {
     var input = "task";
     var parser = new TaskParser();

@@ -33,6 +33,7 @@
  *     ✓ .work ➤ due at 3pm
  *     ✓ :waiting ➤ due at 10pm
  *     ✓ :notdue ➤ remove due date, AND remove :notdue tag
+ *     ✓ tasks with Jira tickets in name get that ticket injected into context spec
  *
  * TODO: (follow-up)
  *     - remove default date & time logic from DateParser
@@ -43,6 +44,16 @@
 function putJiraTicketsInWorkProject(task) {
     if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.contextSpec)[0])) {
         task.contextSpec.unshift('work');
+    } else if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.name))) {
+        task.contextSpec.unshift('work');
+    }
+    return task;
+}
+
+function autoDetectJiraParentTask(task) {
+    if (/\b\w\w\w\w?-\d\d\d\d?\b/.test(task.name)) { // has Jira ticket ID in name
+        var ticket = task.name.match(/\b\w\w\w\w?-\d\d\d\d?\b/)[0];
+        task.contextSpec.push(ticket);
     }
     return task;
 }
@@ -128,6 +139,7 @@ function applyRules(task) {
 function RuleManager() {
     this.rules = [
         putJiraTicketsInWorkProject,
+        autoDetectJiraParentTask,
         defaultEmptyContextToWorkProject,
         defaultWorkTasksToGeneralParentTask,
         tagExpectedTasksAsWaiting,
