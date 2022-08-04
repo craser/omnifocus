@@ -29,8 +29,8 @@
  *     ✓ default due date: today (implemented in DateParser)
  *     ✓ default due time: 7pm (in DateParser)
  *     ✓ :errands ➤ due at 11am
+ *     ✓ .housekeeping ➤ due at 11am
  *     ✓ .work ➤ due at 3pm
- *     ✓ .housekeeping ➤ due at 9pm
  *     ✓ :waiting ➤ due at 10pm
  *     ✓ :notdue ➤ remove due date, AND remove :notdue tag
  *
@@ -88,7 +88,7 @@ function workTasksDueAtThreePm(task) {
 
 function housekeepingTasksDueAtNinePm(task) {
     if (/\bhouse(keeping)?\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
-        task.dueDate.setHours(21);
+        task.dueDate.setHours(11);
         task.dueDate.isDefaultTime = false;
     }
     return task;
@@ -132,8 +132,8 @@ function RuleManager() {
         defaultWorkTasksToGeneralParentTask,
         tagExpectedTasksAsWaiting,
         workTasksDueAtThreePm,
-        housekeepingTasksDueAtNinePm,
         waitingTasksDueAtTenPm,
+        housekeepingTasksDueAtNinePm,
         errandsDueAtEleven,
         notDueTasksHaveNoDueDate
     ];

@@ -244,18 +244,18 @@ test('Should NOT set the time on .work tasks if time is specified', () => {
     expectDateTime(task.dueDate, 2021, 0, 1, 10, 0);
 });
 
-test('Should set the time on .housekeeping tasks to 9pm', () => {
+test('Should set the time on .housekeeping tasks to 11am', () => {
     var input = 'work task // .housekeeping';
     var parser = new TaskParser();
     var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 21, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
 });
 
 test('Should set the time on .house :home tasks to 9pm', () => {
     var input = 'work task // .house :home';
     var parser = new TaskParser();
     var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 21, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
 });
 
 test('Should NOT set the time on .housekeeping tasks if time is specified', () => {
