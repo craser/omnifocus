@@ -22,11 +22,22 @@ function shell(cmd, f) {
     });
 }
 
+/**
+ * Just trying to ensure that the JSON can be passed through to the shell
+ * without breaking quote pairing.
+ * @param json
+ * @return {*}
+ */
+function sanitizeJson(json) {
+    return json.replace(/'/, "\\'");
+}
+
 function createOmniFocusTask(task) {
     var json = JSON.stringify(task);
     console.log(`json: ${json}`);
     var script = getAbsolutePath('json-to-task.js');
-    shell(`${script} '${json}'`, function (text) {
+    var sanitizedJson = sanitizeJson(json);
+    shell(`${script} '${sanitizedJson}'`, function (text) {
         console.log(text);
     });
 }
