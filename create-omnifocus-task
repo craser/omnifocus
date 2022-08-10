@@ -1,6 +1,6 @@
 #!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
 
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const TaskParser = require('./js/TaskParser');
 const path = require('path');
 
@@ -14,11 +14,16 @@ function getAbsolutePath(cmd) {
     }
 }
 
-function shell(cmd, f) {
-    exec(cmd, function (error, stdout, stderr) {
-        console.log(error);
-        console.log(stderr.trim());
-        f(stdout.trim());
+function shell(cmd, args, f) {
+    let proc = spawn(cmd, args); // spawn separate process
+    proc.stdout.on('data', data => {
+        f(data);
+    });
+    proc.on('error', error => {
+        console.log(`error: ${error}`);
+    });
+    proc.stderr.on('data', data => {
+        console.log(`stderr: ${data}`);
     });
 }
 
@@ -36,8 +41,7 @@ function createOmniFocusTask(task) {
     var json = JSON.stringify(task);
     console.log(`json: ${json}`);
     var script = getAbsolutePath('json-to-task.js');
-    var sanitizedJson = sanitizeJson(json);
-    shell(`${script} '${sanitizedJson}'`, function (text) {
+    shell(script, [json], function (text) {
         console.log(text);
     });
 }
