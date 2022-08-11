@@ -58,13 +58,12 @@ function CreateOmniFocusTask() {
         process.chdir(dir);
     }
 }
-
-if (typeof module != 'undefined') {
-    console.log('exporting');
-    module.exports = CreateOmniFocusTask;
-} else {
+if (require.main === module) {
     console.log('running');
     let creator = new CreateOmniFocusTask();
     creator.initEnv(process);
     creator.run(process.argv.slice(2));
+} else {
+    console.log('exporting');
+    module.exports = CreateOmniFocusTask;
 }
