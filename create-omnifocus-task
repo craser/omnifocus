@@ -4,68 +4,67 @@ const { spawn } = require('child_process');
 const TaskParser = require('./js/TaskParser');
 const path = require('path');
 
-function getAbsolutePath(cmd) {
-    let basename = path.basename(cmd);
-    if (basename == cmd) {
-        let absolute = path.join(process.cwd(), cmd);
-        return absolute;
-    } else {
-        return cmd;
+function CreateOmniFocusTask() {
+    function getAbsolutePath(cmd) {
+        let basename = path.basename(cmd);
+        if (basename == cmd) {
+            let absolute = path.join(process.cwd(), cmd);
+            return absolute;
+        } else {
+            return cmd;
+        }
+    }
+
+    this.shell = function(cmd, args, f) {
+        let proc = spawn(cmd, args); // spawn separate process
+        proc.stdout.on('data', data => {
+            f(data);
+        });
+        proc.on('error', error => {
+            console.log(`error: ${error}`);
+        });
+        proc.stderr.on('data', data => {
+            console.log(`stderr: ${data}`);
+        });
+    }
+
+    this.createTask = function(task) {
+        var json = JSON.stringify(task);
+        console.log(`json: ${json}`);
+        var script = getAbsolutePath('json-to-task.js');
+        this.shell(script, [json], function (text) {
+            console.log(text);
+        });
+    }
+
+    this.run = function(argv) {
+        try {
+            console.log('################################################################################');
+            console.log(`creating new task: ${new Date()}`);
+            console.log(`input: "${argv[0]}"`);
+            var string = argv[0];
+            var task = new TaskParser().parse(string);
+            this.createTask(task);
+            console.log('task created');
+        } catch (e) {
+            console.log(`error creating task: ${e}`);
+            console.log(e);
+        }
+    }
+
+    this.initEnv = function(process) {
+        let script = process.argv[1];
+        let dir = path.dirname(script);
+        process.chdir(dir);
     }
 }
 
-function shell(cmd, args, f) {
-    let proc = spawn(cmd, args); // spawn separate process
-    proc.stdout.on('data', data => {
-        f(data);
-    });
-    proc.on('error', error => {
-        console.log(`error: ${error}`);
-    });
-    proc.stderr.on('data', data => {
-        console.log(`stderr: ${data}`);
-    });
+if (typeof module != 'undefined') {
+    console.log('exporting');
+    module.exports = CreateOmniFocusTask;
+} else {
+    console.log('running');
+    let creator = new CreateOmniFocusTask();
+    creator.initEnv(process);
+    creator.run(process.argv.slice(2));
 }
-
-/**
- * Just trying to ensure that the JSON can be passed through to the shell
- * without breaking quote pairing.
- * @param json
- * @return {*}
- */
-function sanitizeJson(json) {
-    return json.replace(/'/, "\\'");
-}
-
-function createOmniFocusTask(task) {
-    var json = JSON.stringify(task);
-    console.log(`json: ${json}`);
-    var script = getAbsolutePath('json-to-task.js');
-    shell(script, [json], function (text) {
-        console.log(text);
-    });
-}
-
-function run(argv) {
-    try {
-        console.log('################################################################################');
-        console.log(`creating new task: ${new Date()}`);
-        console.log(`input: "${argv[0]}"`);
-        var string = argv[0];
-        var task = new TaskParser().parse(string);
-        createOmniFocusTask(task);
-        console.log('task created');
-    } catch (e) {
-        console.log(`error creating task: ${e}`);
-        console.log(e);
-    }
-}
-
-function initEnv(process) {
-    let script = process.argv[1];
-    let dir = path.dirname(script);
-    process.chdir(dir);
-}
-
-initEnv(process);
-run(process.argv.slice(2));
