@@ -45,19 +45,11 @@ function putJiraTicketsInWorkProject(task) {
     if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.contextSpec)[0])) {
         task.contextSpec.unshift('work');
     } else if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.name))) {
-        task.contextSpec.unshift('work');
-    }
-    return task;
-}
-
-function autoDetectJiraParentTask(task) {
-    if (/\b\w\w\w\w?-\d\d\d\d?\b/.test(task.name)) { // has Jira ticket ID in name
         var ticket = task.name.match(/\b\w\w\w\w?-\d\d\d\d?\b/)[0];
-        task.contextSpec.push(ticket);
+        task.contextSpec.unshift('work', ticket);
     }
     return task;
 }
-
 function defaultEmptyContextToWorkProject(task) {
     if (task.contextSpec.length == 0) {
         task.contextSpec = ['work', 'general'];
@@ -139,7 +131,6 @@ function applyRules(task) {
 function RuleManager() {
     this.rules = [
         putJiraTicketsInWorkProject,
-        autoDetectJiraParentTask,
         defaultEmptyContextToWorkProject,
         defaultWorkTasksToGeneralParentTask,
         tagExpectedTasksAsWaiting,
