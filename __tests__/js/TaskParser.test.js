@@ -182,6 +182,22 @@ test('Phone number support in task & notes', () => {
     expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
 });
 
+test('Should ignore number strings that are NOT phone numbers.', () => {
+    var input = "Contact support // /** https://kryterion.force.com/support/s/contactsupport?language=en_US&_ga=2.203236369.1088963720.1661209194-471399446.1641846271";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectTask(task, {
+        name: 'Contact support',
+        tagNames: [],
+        note: 'https://kryterion.force.com/support/s/contactsupport?language=en_US&_ga=2.203236369.1088963720.1661209194-471399446.1641846271',
+        flagged: false,
+        contextSpec: ['work', 'general'],
+        completed: false,
+        primaryTagName: null
+    });
+    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
+});
+
 test("Exclamation point shouldn't break parsing.", () => {
     var input = "I want to be an Air Force Ranger! // .house :home";
     var parser = new TaskParser();
