@@ -1,0 +1,33 @@
+/*{
+	"type": "action",
+	"targets": ["omnifocus"],
+	"author": "Chris Raser",
+	"identifier": "io.raser.of.showParent",
+	"version": "5",
+	"description": "This action will display the parent of the selected task.",
+	"label": "Show Parent Task",
+	"shortLabel": "Show Parent Task",
+	"paletteLabel": "Show Parent Task",
+	"image": "gearshape.fill"
+}*/
+(() => {
+    var action = new PlugIn.Action(function (selection, sender) {
+        var task = selection.tasks[0]
+        var parent = task.parent
+        var parentId = parent.id.primaryKey
+        var urlStr = "omnifocus://task/" + parentId
+        URL.fromString(urlStr).open()
+    });
+
+    action.validate = function (selection, sender) {
+        if (selection.tasks.length == 1) {
+            var task = selection.tasks[0];
+            var hasParent = !!task.parent
+            return hasParent;
+        } else {
+            return false;
+        }
+    };
+
+    return action;
+})();

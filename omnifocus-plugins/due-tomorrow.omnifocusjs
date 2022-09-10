@@ -1,0 +1,39 @@
+/*{
+	"type": "action",
+	"targets": ["omnifocus"],
+	"author": "Chris Raser",
+	"identifier": "io.raser.of.DueTomorrow",
+	"version": "1.0",
+	"description": "Make Task Due Tomorrow",
+	"label": "Due Tomorrow",
+	"shortLabel": "Due Tomorrow",
+	"paletteLabel": "Due Tomorrow",
+	"image": "gearshape.fill"
+}*/
+(() => {
+
+    /**
+     * Does the actual work associated with this plugin.
+     * @type {PlugIn.Action}
+     */
+    const action = new PlugIn.Action(function (selection, sender) {
+        selection.tasks.forEach(task => {
+            var due = task.dueDate;
+            var tomorrow = new Date(); // same time tomorrow
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(due.getHours());
+            tomorrow.setMinutes(due.getMinutes());
+            task.dueDate = tomorrow;
+        });
+    });
+
+    /**
+     * Should this action currently be available?
+     * return Boolean
+     */
+    action.validate = function (selection, sender) {
+        return selection.tasks.length > 0;
+    };
+
+    return action;
+})();
