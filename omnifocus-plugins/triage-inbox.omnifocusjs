@@ -1,0 +1,40 @@
+/*{
+	"type": "action",
+	"targets": ["omnifocus"],
+	"author": "Chris Raser",
+	"identifier": "io.raser.of.triageInbox",
+	"version": "7",
+	"description": "Make all inbox items due today.",
+	"label": "Auto-Triage Inbox",
+	"shortLabel": "Auto-Triage Inbox",
+	"paletteLabel": "Auto-Triage Inbox",
+	"image": "gearshape.fill"
+}*/
+(() => {
+
+    /**
+     * Assigns all inbox tasks a default due date of today at 7pm so they
+     * appear in the Today view.
+     *
+     * @type {PlugIn.Action}
+     */
+    const action = new PlugIn.Action(function (selection, sender) {
+        var today = new Date();
+        today.setHours(19);
+        today.setMinutes(0);
+        today.setSeconds(0);
+        today.setMilliseconds(0);
+
+        inbox.forEach((task) => task.dueDate = task.dueDate || today);
+    });
+
+    /**
+     * Always available.
+     * return Boolean
+     */
+    action.validate = function (selection, sender) {
+        return true;
+    };
+
+    return action;
+})();

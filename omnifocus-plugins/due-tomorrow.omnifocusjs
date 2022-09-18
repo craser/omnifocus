@@ -3,7 +3,7 @@
 	"targets": ["omnifocus"],
 	"author": "Chris Raser",
 	"identifier": "io.raser.of.DueTomorrow",
-	"version": "1.0",
+	"version": "2",
 	"description": "Make Task Due Tomorrow",
 	"label": "Due Tomorrow",
 	"shortLabel": "Due Tomorrow",
@@ -19,10 +19,12 @@
     const action = new PlugIn.Action(function (selection, sender) {
         selection.tasks.forEach(task => {
             var due = task.dueDate;
+            let dueHours = due ? due.getHours() : 19; // 7pm default
+            let dueMinutes = due ? due.getMinutes() : 0; // on the hour
             var tomorrow = new Date(); // same time tomorrow
             tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(due.getHours());
-            tomorrow.setMinutes(due.getMinutes());
+            tomorrow.setHours(dueHours);
+            tomorrow.setMinutes(dueMinutes);
             task.dueDate = tomorrow;
         });
     });

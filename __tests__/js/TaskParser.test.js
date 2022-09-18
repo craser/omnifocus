@@ -223,13 +223,13 @@ test('Phone number support in task & notes', () => {
 });
 
 test('Should ignore number strings that are NOT phone numbers.', () => {
-    var input = "Contact support // /** https://kryterion.force.com/support/s/contactsupport?language=en_US&_ga=2.203236369.1088963720.1661209194-471399446.1641846271";
+    var input = "No phone numbers here // /** https://example.com/?q=2.203236369.1088963720.1661209194-471399446.1641846271";
     var parser = new TaskParser();
     var task = parser.parse(input);
     expectTask(task, {
-        name: 'Contact support',
+        name: 'No phone numbers here',
         tagNames: [],
-        note: 'https://kryterion.force.com/support/s/contactsupport?language=en_US&_ga=2.203236369.1088963720.1661209194-471399446.1641846271',
+        note: 'https://example.com/?q=2.203236369.1088963720.1661209194-471399446.1641846271',
         flagged: false,
         contextSpec: [],
         completed: false,
