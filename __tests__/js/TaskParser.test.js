@@ -362,7 +362,6 @@ test('Should respect relative weeks, result in due date of 7/31/2028', () => {
     expect(task.dueDate.isDefaultDate).toBeFalsy();
 });
 
-
 /**
  * This feature is janky AF & I don't like it.
  */
@@ -372,4 +371,35 @@ test('Honor :notdue tag, indicating that no due date should be added', () => {
     var task = parser.parse(input);
     expect(task.dueDate).toBeNull();
     expect(task.tagNames).not.toContain('notdue');
+});
+
+/**
+ * Items in Movies & Reading are not due by default.
+ */
+test('Tasks in Movies are not due by default.', () => {
+    var input = "Miller's Crossing // .Movies";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.dueDate).toBeNull();
+});
+
+test('Tasks in Movies are not due by default, but honor specified due date.', () => {
+    var input = "Miller's Crossing // .Movies 7/27/2028";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 6, 27);
+});
+
+test('Tasks in Reading are not due by default.', () => {
+    var input = "Miller's Crossing // .Reading";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.dueDate).toBeNull();
+});
+
+test('Tasks in Reading are not due by default, but honor specified due date.', () => {
+    var input = "Miller's Crossing // .Reading 7/27/2028";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDate(task.dueDate, 2028, 6, 27);
 });

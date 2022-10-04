@@ -113,6 +113,17 @@ function notDueTasksHaveNoDueDate(task) {
     return task;
 }
 
+function moviesHaveNoDueDate(task) {
+    let isMovies = /movies/i.test(task.contextSpec[0]);
+    let isReading = /reading/i.test(task.contextSpec[0]);
+    if (isMovies || isReading) {
+        if (task.dueDate && task.dueDate.isDefaultDate) {
+            task.dueDate = null;
+        }
+    }
+    return task;
+}
+
 function hasTag(task, tag) {
     return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
 }
@@ -138,7 +149,8 @@ function RuleManager() {
         waitingTasksDueAtTenPm,
         housekeepingTasksDueAtNinePm,
         errandsDueAtEleven,
-        notDueTasksHaveNoDueDate
+        notDueTasksHaveNoDueDate,
+        moviesHaveNoDueDate
     ];
     this.applyRules = applyRules;
 }
