@@ -86,7 +86,7 @@ test('Sample 3', () => {
     expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
 })
 
-test('Sample 4', () => {
+test('Add completed flag & date for tasks marked as done', () => {
     var input = 'task name // :tagname1, :tagname2 .project.task 5/11/2023 11:22pm flag done';
     var parser = new TaskParser();
     var task = parser.parse(input);
@@ -100,6 +100,7 @@ test('Sample 4', () => {
         primaryTagName: 'tagname1'
     });
     expectDateTime(task.dueDate, 2023, 4, 11, 23, 22);
+    expectDateTime(task.completionDate, 2021, 0, 1, 0, 0, 0);
 })
 
 test('Sample 5', () => {

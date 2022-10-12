@@ -46,6 +46,7 @@ function parseIsFlagged(string) {
 
 function parseTask(string) {
     var meta = getMeta(string);
+    let isCompleted = parseIsCompleted(string);
     var task = {
         name: parseTaskName(string),
         tagNames: getTagNames(meta),
@@ -53,7 +54,8 @@ function parseTask(string) {
         dueDate: new DateParser().parseDueDate(meta),
         flagged: parseIsFlagged(string),
         contextSpec: new ContextParser().parse(meta),
-        completed: parseIsCompleted(string),
+        completed: isCompleted,
+        completionDate: (isCompleted ? new Date() : null),
         primaryTagName: getPrimaryTagName(meta)
     }
     task = new RulesManager().applyRules(task);
