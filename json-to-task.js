@@ -120,7 +120,7 @@ function createOmniFocusTask(task) {
     var tags = parseTags(OmniFocus, task.tagNames);
     var omniFocusTask = OmniFocus.Task({
         name: task.name,
-        primaryTag: primaryTag,
+        primaryTag: task.completed ? null : primaryTag, // OmniFocus chokes on completed tasks with a primary tag.
         dueDate: task.dueDate,
         note: task.note,
         completed: task.completed,
@@ -139,6 +139,9 @@ function parseDate(string) {
 function parseTask(json) {
     var task = JSON.parse(json);
     task.dueDate = parseDate(task.dueDate);
+    console.log(`parsing completion date: ${task.completionDate}`);
+    task.completionDate = parseDate(task.completionDate);
+    console.log(`parsed completion date: ${task.completionDate}`);
     return task;
 }
 

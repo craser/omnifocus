@@ -199,6 +199,21 @@ test('Should ignore number strings that are NOT phone numbers.', () => {
     expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
 });
 
+test('Should correctly populate completion date & done status, even with tags', () => {
+    var input = 'test task // .house :home done';
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectTask(task, {
+        name: 'test task',
+        tagNames: ['home'],
+        note: '',
+        flagged: false,
+        contextSpec: ['house'],
+        completed: true,
+        primaryTagName: 'home'
+    });
+});
+
 test("Exclamation point shouldn't break parsing.", () => {
     var input = "I want to be an Air Force Ranger! // .house :home";
     var parser = new TaskParser();
