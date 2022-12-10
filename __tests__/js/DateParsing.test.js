@@ -32,6 +32,12 @@ test('parseTask should correctly interpret "tomorrow" as due date', () => {
     checkExpectedDate('tomorrow', 2021, 0, 2);
 });
 
+test('parseTask should correctly interpret "tmw" as due date', () => {
+    // new Date() always returns 1/1/2021 at 12:00 AM, PST
+    checkExpectedDate('', 2021, 0, 1); // check premises
+    checkExpectedDate('tmw', 2021, 0, 2);
+});
+
 test('Honor ex. 10pm as time spec', () => {
     checkExpectedTime('9am', 9, 0);
     checkExpectedTime('9:00am', 9, 0);

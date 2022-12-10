@@ -59,6 +59,10 @@ function parseBaseDate(meta) {
         var date = new Date();
         date.setDate(date.getDate() + 1);
         return date;
+    } else if (/tmw/i.test(meta)) {
+        var date = new Date();
+        date.setDate(date.getDate() + 1);
+        return date;
     } else if (hasDayOfWeek(meta)) {
         var date = parseDayOfWeek(meta);
         return date;
