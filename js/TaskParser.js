@@ -40,8 +40,13 @@ function parseIsCompleted(string) {
 
 function parseIsFlagged(string) {
     var meta = getMeta(string);
-    var flagged = /\bflag(ged)?\b/i.test(meta);
-    return flagged;
+    if (/\bflag(ged)?\b/i.test(meta)) {
+        return true;
+    } else if (/\bnext\b/i.test(meta)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function parseTask(string) {

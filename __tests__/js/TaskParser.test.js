@@ -419,3 +419,18 @@ test('Tasks in Reading are not due by default, but honor specified due date.', (
     var task = parser.parse(input);
     expectDate(task.dueDate, 2028, 6, 27);
 });
+
+test('Tolerate missing space after meta delimiter', () => {
+    var input = "task //:home .house";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('house');
+});
+
+test('Task with "next" as due date should get now as due date, and be flagged', () => {
+    var input = "task // next";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectDateTime(task.dueDate, 2021, 0, 1, 0, 0);
+    expect(task.flagged).toBeTruthy();
+});

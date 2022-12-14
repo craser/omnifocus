@@ -83,7 +83,10 @@ function parseBaseDate(meta) {
 }
 
 function applyDateModifiers(date, meta) {
-    if (/[+-]?\d+\s?days?/i.test(meta)) {
+    if (/next/i.test(meta)) {
+        date.setDate(new Date().getDate());
+        date.isDefaultDate = false;
+    } else if (/[+-]?\d+\s?days?/i.test(meta)) {
         var line = meta.match(/([+-]?\d+)\s?days?/i);
         var days = parseInt(line[1]);
         date.setDate(date.getDate() + days);
@@ -145,6 +148,13 @@ function parseTime(meta) {
             seconds: 0
         };
     } else if (/\bnow\b/i.test(meta)) {
+        var now = new Date();
+        return {
+            hours: now.getHours(),
+            minutes: now.getMinutes(),
+            seconds: 0
+        };
+    } else if (/next/i.test(meta)) {
         var now = new Date();
         return {
             hours: now.getHours(),
