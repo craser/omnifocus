@@ -19,7 +19,11 @@
           "project": "work"
         },
         {
-          "parent": { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } }
+          "parent": {
+            "match": {
+              "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+            }
+          }
         }
       ]
     },
@@ -47,6 +51,45 @@
           "tag": "waiting"
         }
       ]
+    },
+    {
+      "name": "Default work tasks to general parent task",
+      "condition": {
+        "and": [
+          {
+            "project": "/\\bwork\\b/"
+          },
+          {
+            "no-parent": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "parent": "general"
+        }
+      ]
+    },
+    {
+      "name": "Work tasks due at 3pm",
+      "condition": {
+        "and": [
+          {
+            "project": "/\\bwork\\b/"
+          },
+          {
+            "defaultTime": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "problem": "this messes with the date as well as the time",
+          "due": "3pm"
+        }
+      ]
     }
   ]
 }
+
+

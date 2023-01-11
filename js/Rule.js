@@ -47,6 +47,8 @@ function act(action, task) {
         let parent = evaluate(action.parent, task);
         task.contextSpec.push(parent);
         task.contextSpec = uniq(task.contextSpec);
+    } else if ('due' in action) {
+        task.dueDate = dateParser.parseDueDate(action.due);
     }
     return task;
 }
@@ -70,6 +72,10 @@ function test(condition, task) {
         return condition["no-project"]
             ? task.contextSpec.length == 0
             : task.contextSpec.length > 0;
+    } else if ('no-parent' in condition) {
+        return condition["no-parent"]
+            ? task.contextSpec.length == 1
+            : task.contextSpec.length > 1;
     } else {
         throw new Error('Unknown condition: ' + JSON.stringify(condition));
     }

@@ -74,6 +74,26 @@ test('Matches project', () => {
     expectNotMatches({"no-project": false}, { contextSpec: [], tagNames: [] });
 });
 
+test('Matches no-parent', () => {
+    expectMatches({"no-parent": true}, { contextSpec: ['work'], tagNames: [] });
+});
+
+test('Does not match no-parent', () => {
+    expectNotMatches({ "no-parent": true }, { contextSpec: ['project', 'parent'], tagNames: [] });
+});
+
+test('Matches work' , () => {
+    expectMatches({
+        "and": [
+            {
+                "project": "/\\bwork\\b/"
+            },
+            {
+                "defaultTime": true
+            }
+        ]
+    }, { dueDate: new Date(), contextSpec: ['work'], tagNames: [] });
+});
 
 
 
