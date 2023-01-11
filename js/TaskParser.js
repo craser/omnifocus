@@ -3,6 +3,7 @@ const DateParser = require('./DateParser');
 const ContextParser = require('./ContextParser');
 const NoteParser = require('./NoteParser');
 const RulesManager = require('./RuleManager');
+const ParserConfig = require('./ParserConfig');
 
 function parseTaskName(string) {
     var name = string.replace(/\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
@@ -50,6 +51,7 @@ function parseIsFlagged(string) {
 }
 
 function parseTask(string) {
+    var config = new ParserConfig();
     var meta = getMeta(string);
     let isCompleted = parseIsCompleted(string);
     var task = {
@@ -63,7 +65,7 @@ function parseTask(string) {
         completionDate: (isCompleted ? new Date() : null),
         primaryTagName: getPrimaryTagName(meta)
     }
-    task = new RulesManager().applyRules(task);
+    task = new RulesManager(config).applyRules(task);
     return task;
 }
 

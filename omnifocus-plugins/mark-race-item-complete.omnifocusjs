@@ -1,0 +1,6 @@
+(function (name) {
+    projectNamed('Race Checklist').children
+        .filter(t => !t.completed)
+        .find(t => t.name.toLowerCase().startsWith(name.toLowerCase()))
+        .markComplete();
+}('shoes'))

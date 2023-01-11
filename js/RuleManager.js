@@ -1,5 +1,7 @@
 'use strict'
 
+const Rule = require('./Rule');
+
 /**
  * First cut at this feature. Hard-coding to play & decide what I want.
  * My day is currently blocked out like this:
@@ -133,18 +135,25 @@ function removeTag(task, tag) {
 }
 
 function applyRules(task) {
+    this.softRules.forEach((rule) => {
+        task = rule.apply(task);
+    });
     this.rules.forEach((rule) => {
         task = rule(task);
     });
     return task;
 }
 
-function RuleManager() {
+function parseRules(rulesConfig) {
+    return rulesConfig.map(rule => new Rule(rule));
+}
+
+function RuleManager(config) {
+    this.softRules = parseRules(config.getRulesConfig());
     this.rules = [
-        putJiraTicketsInWorkProject,
-        defaultEmptyContextToWorkProject,
+        //putJiraTicketsInWorkProject,
+        //defaultEmptyContextToWorkProject,
         defaultWorkTasksToGeneralParentTask,
-        tagExpectedTasksAsWaiting,
         workTasksDueAtThreePm,
         waitingTasksDueAtTenPm,
         housekeepingTasksDueAtNinePm,

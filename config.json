@@ -1,0 +1,52 @@
+{
+  "description": "Config file for OmniFocus-related quick entry & command-line utilities.",
+  "github": "https://github.com/craser/omnifocus",
+  "rules": [
+    {
+      "name": "Put Jira tickets in .work project",
+      "condition": {
+        "or": [
+          {
+            "project": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+          },
+          {
+            "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "project": "work"
+        },
+        {
+          "parent": { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } }
+        }
+      ]
+    },
+    {
+      "name": "Default empty context to work project",
+      "condition": {
+        "no-project": true
+      },
+      "actions": [
+        {
+          "project": "work"
+        },
+        {
+          "parent": "general"
+        }
+      ]
+    },
+    {
+      "name": "Tag 'expected' tasks as :waiting",
+      "condition": {
+        "name": "/expect/i"
+      },
+      "actions": [
+        {
+          "tag": "waiting"
+        }
+      ]
+    }
+  ]
+}
