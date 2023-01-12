@@ -6,145 +6,93 @@
       "name": "Put Jira tickets in .work project",
       "condition": {
         "or": [
-          {
-            "project": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
-          },
-          {
-            "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
-          }
+          { "project": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" },
+          { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" }
         ]
       },
       "actions": [
-        {
-          "project": "work"
-        },
-        {
-          "parent": {
-            "match": {
-              "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
-            }
-          }
-        }
+        { "project": "work" },
+        { "parent": { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } } }
       ]
     },
     {
       "name": "Default empty context to work project",
-      "condition": {
-        "no-project": true
-      },
+      "condition": { "no-project": true },
       "actions": [
-        {
-          "project": "work"
-        },
-        {
-          "parent": "general"
-        }
+        { "project": "work" },
+        { "parent": "general" }
       ]
     },
     {
       "name": "Default work tasks to general parent task",
       "condition": {
         "and": [
-          {
-            "project": "/\\bwork\\b/"
-          },
-          {
-            "no-parent": true
-          }
+          { "project": "/\\bwork\\b/" },
+          { "no-parent": true }
         ]
       },
       "actions": [
-        {
-          "parent": "general"
-        }
+        { "parent": "general" }
       ]
     },
     {
       "name": "Tag expected tasks as :waiting",
-      "condition": {
-        "name": "/expect/i"
-      },
+      "condition": { "name": "/expect/i" },
       "actions": [
-        {
-          "tag": "waiting"
-        }
+        { "tag": "waiting" }
       ]
     },
     {
       "name": "Work tasks due at 3pm",
       "condition": {
         "and": [
-          {
-            "project": "/\\bwork\\b/"
-          },
-          {
-            "defaultTime": true
-          }
+          { "project": "/\\bwork\\b/" },
+          { "defaultTime": true }
         ]
       },
       "actions": [
-        {
-          "due": "3pm"
-        }
+        { "due": "3pm" }
       ]
     },
     {
       "name": "Waiting tasks due at 10pm",
       "condition": {
         "and": [
-          {
-            "tag": "waiting"
-          },
-          {
-            "defaultTime": true
-          }
+          { "tag": "waiting" },
+          { "defaultTime": true }
         ]
       },
       "actions": [
-        {
-          "due": "10pm"
-        }
+        { "due": "10pm" }
       ]
     },
     {
       "name": "Housekeeping tasks due at 11am",
       "condition": {
         "and": [
-          {
-            "project": "/\\bhouse(keeping)?\\b/"
-          },
-          {
-            "defaultTime": true
-          }
+          { "project": "/\\bhouse(keeping)?\\b/" },
+          { "defaultTime": true }
         ]
       },
       "actions": [
-        {
-          "due": "11am"
-        }
+        { "due": "11am" }
       ]
     },
     {
       "name": "Errands due at 11am",
       "condition": {
         "and": [
-          {
-            "tag": "errands"
-          },
-          {
-            "defaultTime": true
-          }
+          { "tag": "errands" },
+          { "defaultTime": true }
         ]
       },
       "actions": [
-        {
-          "due": "11am"
-        }
+        { "due": "11am" }
       ]
     },
     {
       "name": "Not-due tasks have no due date",
-      "condition": { "tag":  "notdue"},
+      "condition": { "tag": "notdue" },
       "actions": [
         { "due": null },
         { "removeTag": "notdue" }
@@ -152,5 +100,3 @@
     }
   ]
 }
-
-

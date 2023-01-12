@@ -43,103 +43,10 @@ const Rule = require('./Rule');
 
  * @return {{}}
  */
-function putJiraTicketsInWorkProject(task) {
-    if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.contextSpec)[0])) {
-        task.contextSpec.unshift('work');
-    } else if (/\b\w\w\w\w?-\d\d\d\d?\b/.test((task.name))) {
-        var ticket = task.name.match(/\b\w\w\w\w?-\d\d\d\d?\b/)[0];
-        task.contextSpec.unshift('work', ticket);
-    }
-    return task;
-}
-function defaultEmptyContextToWorkProject(task) {
-    if (task.contextSpec.length == 0) {
-        task.contextSpec = ['work', 'general'];
-    }
-    return task;
-}
-
-function defaultWorkTasksToGeneralParentTask(task) {
-    if (/\bwork\b/i.test((task.contextSpec)[0]) && task.contextSpec.length == 1) {
-        task.contextSpec.push('general');
-    }
-    return task;
-}
-
-function tagExpectedTasksAsWaiting(task) {
-    var taskName = task.name;
-    if (/expect/i.test(taskName)) {
-        task.tagNames.unshift('waiting'); // prepend to list
-        task.primaryTagName = 'waiting'; // update primary tag to reflect that 'waiting' is at the head of the list
-    }
-    return task;
-}
-
-function errandsDueAtEleven(task) {
-    if (hasTag(task, 'errands') && task.dueDate.isDefaultTime) {
-        task.dueDate.setHours(11);
-        task.dueDate.isDefaultTime = false;
-    }
-    return task;
-}
-
-function workTasksDueAtThreePm(task) {
-    if (/\bwork\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
-        task.dueDate.setHours(15);
-        task.dueDate.isDefaultTime = false;
-    }
-    return task;
-}
-
-function housekeepingTasksDueAtNinePm(task) {
-    if (/\bhouse(keeping)?\b/i.test(task.contextSpec[0]) && task.dueDate.isDefaultTime) {
-        task.dueDate.setHours(11);
-        task.dueDate.isDefaultTime = false;
-    }
-    return task;
-}
-
-function waitingTasksDueAtTenPm(task) {
-    if (hasTag(task, 'waiting') && task.dueDate.isDefaultTime) {
-        task.dueDate.setHours(22);
-        task.dueDate.isDefaultTime = false;
-    }
-    return task;
-}
-
-function notDueTasksHaveNoDueDate(task) {
-    if (hasTag(task, 'notdue')) {
-        task.dueDate = null;
-        removeTag(task, 'notdue');
-    }
-    return task;
-}
-
-function moviesHaveNoDueDate(task) {
-    let isMovies = /movies/i.test(task.contextSpec[0]);
-    let isReading = /reading/i.test(task.contextSpec[0]);
-    if (isMovies || isReading) {
-        if (task.dueDate && task.dueDate.isDefaultDate) {
-            task.dueDate = null;
-        }
-    }
-    return task;
-}
-
-function hasTag(task, tag) {
-    return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
-}
-
-function removeTag(task, tag) {
-    task.tagNames = task.tagNames.filter(name => name != tag);
-}
 
 function applyRules(task) {
-    this.softRules.forEach((rule) => {
-        task = rule.apply(task);
-    });
     this.rules.forEach((rule) => {
-        task = rule(task);
+        task = rule.apply(task);
     });
     return task;
 }
@@ -149,20 +56,7 @@ function parseRules(rulesConfig) {
 }
 
 function RuleManager(config) {
-    this.softRules = parseRules(config.getRulesConfig());
-    this.rules = [];
-    let oldRules = [
-        putJiraTicketsInWorkProject,
-        defaultEmptyContextToWorkProject,
-        defaultWorkTasksToGeneralParentTask,
-        tagExpectedTasksAsWaiting,
-        workTasksDueAtThreePm,
-        waitingTasksDueAtTenPm,
-        housekeepingTasksDueAtNinePm,
-        errandsDueAtEleven,
-        notDueTasksHaveNoDueDate,
-        moviesHaveNoDueDate
-    ];
+    this.rules = parseRules(config.getRulesConfig());
     this.applyRules = applyRules;
 }
 
