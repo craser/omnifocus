@@ -179,9 +179,28 @@ function parseDueDate(meta) {
         }
         return date;
     } catch (e) {
-          var date = getDefaultDate();
+        var date = getDefaultDate();
         return date;
     }
+}
+
+function overrideDate(date, meta) {
+    var override = parseDueDate(meta);
+    if (meta == null) {
+        return null;
+    }
+    if (date.isDefaultDate) {
+        date.setDate(override.getDate());
+        date.setMonth(override.getMonth());
+        date.setFullYear(override.getFullYear());
+    }
+    if (date.isDefaultTime) {
+        date.setHours(override.getHours());
+        date.setMinutes(override.getMinutes());
+        date.setSeconds(override.getSeconds());
+        date.isDefaultTime = override.isDefaultTime;
+    }
+    return date;
 }
 
 /**
@@ -199,6 +218,7 @@ function DateParser() {
     this.parseDate = parseDate;
     this.parseTime = parseTime;
     this.getDefaultDate = getDefaultDate;
+    this.overrideDate = overrideDate;
 }
 
 module.exports = DateParser;

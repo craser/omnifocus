@@ -42,17 +42,6 @@
       ]
     },
     {
-      "name": "Tag 'expected' tasks as :waiting",
-      "condition": {
-        "name": "/expect/i"
-      },
-      "actions": [
-        {
-          "tag": "waiting"
-        }
-      ]
-    },
-    {
       "name": "Default work tasks to general parent task",
       "condition": {
         "and": [
@@ -71,6 +60,17 @@
       ]
     },
     {
+      "name": "Tag expected tasks as :waiting",
+      "condition": {
+        "name": "/expect/i"
+      },
+      "actions": [
+        {
+          "tag": "waiting"
+        }
+      ]
+    },
+    {
       "name": "Work tasks due at 3pm",
       "condition": {
         "and": [
@@ -84,9 +84,70 @@
       },
       "actions": [
         {
-          "problem": "this messes with the date as well as the time",
           "due": "3pm"
         }
+      ]
+    },
+    {
+      "name": "Waiting tasks due at 10pm",
+      "condition": {
+        "and": [
+          {
+            "tag": "waiting"
+          },
+          {
+            "defaultTime": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "due": "10pm"
+        }
+      ]
+    },
+    {
+      "name": "Housekeeping tasks due at 11am",
+      "condition": {
+        "and": [
+          {
+            "project": "/\\bhouse(keeping)?\\b/"
+          },
+          {
+            "defaultTime": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "due": "11am"
+        }
+      ]
+    },
+    {
+      "name": "Errands due at 11am",
+      "condition": {
+        "and": [
+          {
+            "tag": "errands"
+          },
+          {
+            "defaultTime": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "due": "11am"
+        }
+      ]
+    },
+    {
+      "name": "Not-due tasks have no due date",
+      "condition": { "tag":  "notdue"},
+      "actions": [
+        { "due": null },
+        { "removeTag": "notdue" }
       ]
     }
   ]

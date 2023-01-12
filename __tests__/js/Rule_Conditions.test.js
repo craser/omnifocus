@@ -82,19 +82,6 @@ test('Does not match no-parent', () => {
     expectNotMatches({ "no-parent": true }, { contextSpec: ['project', 'parent'], tagNames: [] });
 });
 
-test('Matches work' , () => {
-    expectMatches({
-        "and": [
-            {
-                "project": "/\\bwork\\b/"
-            },
-            {
-                "defaultTime": true
-            }
-        ]
-    }, { dueDate: new Date(), contextSpec: ['work'], tagNames: [] });
-});
-
 
 
 

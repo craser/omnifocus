@@ -48,12 +48,15 @@ function act(action, task) {
         task.contextSpec.push(parent);
         task.contextSpec = uniq(task.contextSpec);
     } else if ('due' in action) {
-        task.dueDate = dateParser.parseDueDate(action.due);
+        task.dueDate = dateParser.overrideDate(task.dueDate, action.due);
+    } else if ('removeTag' in action) {
+        task.tagNames = task.tagNames.filter(tag => tag != action.removeTag);
     }
     return task;
 }
 
 function test(condition, task) {
+    console.log(`    condition: ${JSON.stringify(condition)}`);
     if ('value' in condition) { // mostly for testing
         return condition.value;
     } else if ('or' in condition) {
@@ -86,11 +89,15 @@ function hasTag(task, tag) {
 }
 
 function apply(task) {
+    console.log(`applying rule: ${this.config.name}`);
     if (test(this.config.condition, task)) {
+        console.log(`    rule matched: ${this.config.name}`);
         this.config.actions.forEach(action => {
+            console.log(`        action: ${JSON.stringify(action)}`);
             task = act(action, task);
         });
     }
+    console.log(`result: ${JSON.stringify(task)}`);
     return task;
 }
 

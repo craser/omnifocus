@@ -135,9 +135,9 @@ function removeTag(task, tag) {
 }
 
 function applyRules(task) {
-  /*  this.softRules.forEach((rule) => {
+    this.softRules.forEach((rule) => {
         task = rule.apply(task);
-    });*/
+    });
     this.rules.forEach((rule) => {
         task = rule(task);
     });
@@ -150,11 +150,13 @@ function parseRules(rulesConfig) {
 
 function RuleManager(config) {
     this.softRules = parseRules(config.getRulesConfig());
-    this.rules = [
-        //putJiraTicketsInWorkProject,
-        //defaultEmptyContextToWorkProject,
-        //defaultWorkTasksToGeneralParentTask,
-        //workTasksDueAtThreePm,
+    this.rules = [];
+    let oldRules = [
+        putJiraTicketsInWorkProject,
+        defaultEmptyContextToWorkProject,
+        defaultWorkTasksToGeneralParentTask,
+        tagExpectedTasksAsWaiting,
+        workTasksDueAtThreePm,
         waitingTasksDueAtTenPm,
         housekeepingTasksDueAtNinePm,
         errandsDueAtEleven,
