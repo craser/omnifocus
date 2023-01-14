@@ -1,3 +1,6 @@
+'use strict'
+
+const DateParser = require('js/DateParser');
 const Rule = require('js/Rule');
 
 function expectTags(task, tags) {
@@ -80,6 +83,24 @@ test('Matches no-parent', () => {
 
 test('Does not match no-parent', () => {
     expectNotMatches({ "no-parent": true }, { contextSpec: ['project', 'parent'], tagNames: [] });
+});
+
+test('Matches work' , () => {
+    let dueDate = new DateParser().parseDueDate('');
+    let task = { contextSpec: ['work'], dueDate: dueDate, tagNames: [] };
+
+    // TODO: The above applies rules already, which messes with testing for defaultTime below.
+
+    expectMatches({
+        "and": [
+            {
+                "project": "/\\bwork\\b/"
+            },
+            {
+                "defaultTime": true
+            }
+        ]
+    }, task);
 });
 
 
