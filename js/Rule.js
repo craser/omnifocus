@@ -56,32 +56,39 @@ function act(action, task) {
 }
 
 function test(condition, task) {
-    console.log(`    condition: ${JSON.stringify(condition)}`);
-    if ('value' in condition) { // mostly for testing
-        return condition.value;
-    } else if ('or' in condition) {
-        return condition.or.reduce((a, condition) => a || test(condition, task), false);
-    } else if ('and' in condition) {
-        return condition.and.reduce((a, condition) => a && test(condition, task), true);
-    } else if ('name' in condition) {
-        return parsePattern(condition.name)(task.name);
-    } else if ('project' in condition) {
-        return parsePattern(condition.project)(task.contextSpec[0]);
-    } else if ('tag' in condition) {
-        return hasTag(task, condition.tag);
-    } else if ('defaultTime' in condition) {
-        return task.dueDate.isDefaultTime == condition.defaultTime;
-    } else if ('no-project' in condition) {
-        return condition["no-project"]
-            ? task.contextSpec.length == 0
-            : task.contextSpec.length > 0;
-    } else if ('no-parent' in condition) {
-        return condition["no-parent"]
-            ? task.contextSpec.length == 1
-            : task.contextSpec.length > 1;
-    } else {
-        throw new Error('Unknown condition: ' + JSON.stringify(condition));
+    function applyCondition(condition, task) {
+        if ('value' in condition) { // mostly for testing
+            return condition.value;
+        } else if ('or' in condition) {
+            return condition.or.reduce((a, condition) => a || test(condition, task), false);
+        } else if ('and' in condition) {
+            return condition.and.reduce((a, condition) => a && test(condition, task), true);
+        } else if ('name' in condition) {
+            return parsePattern(condition.name)(task.name);
+        } else if ('project' in condition) {
+            return parsePattern(condition.project)(task.contextSpec[0]);
+        } else if ('tag' in condition) {
+            return hasTag(task, condition.tag);
+        } else if ('defaultDate' in condition) {
+            return task.dueDate.isDefaultDate == condition.defaultDate;
+        } else if ('defaultTime' in condition) {
+            return task.dueDate.isDefaultTime == condition.defaultTime;
+        } else if ('no-project' in condition) {
+            return condition["no-project"]
+                ? task.contextSpec.length == 0
+                : task.contextSpec.length > 0;
+        } else if ('no-parent' in condition) {
+            return condition["no-parent"]
+                ? task.contextSpec.length == 1
+                : task.contextSpec.length > 1;
+        } else {
+            throw new Error('Unknown condition: ' + JSON.stringify(condition));
+        }
     }
+
+    let result = applyCondition(condition, task);
+    console.log(`test: ${JSON.stringify(condition)} => ${result}`);
+    return result;
 }
 
 function hasTag(task, tag) {

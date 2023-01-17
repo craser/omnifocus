@@ -1,6 +1,7 @@
 'use strict'
 
 const Rule = require('./Rule');
+const ParserConfig = require("./ParserConfig");
 
 /**
  * First cut at this feature. Hard-coding to play & decide what I want.
@@ -55,7 +56,8 @@ function parseRules(rulesConfig) {
     return rulesConfig.map(rule => new Rule(rule));
 }
 
-function RuleManager(config) {
+function RuleManager() {
+    let config = new ParserConfig();
     this.rules = parseRules(config.getRulesConfig());
     this.applyRules = applyRules;
 }

@@ -11,7 +11,17 @@
         ]
       },
       "actions": [
-        { "project": "work" },
+        { "project": "work" }
+      ]
+    },
+    {
+      "name": "Put Jira tickets in a ticket-specific parent task",
+      "condition": {
+        "or": [
+          { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" }
+        ]
+      },
+      "actions": [
         { "parent": { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } } }
       ]
     },
@@ -96,6 +106,32 @@
       "actions": [
         { "due": null },
         { "removeTag": "notdue" }
+      ]
+    },
+    {
+      "name": "Tasks in movies have no due date by default",
+      "condition": {
+        "and": [
+          { "project": "/\\bmovies\\b/i" },
+          { "defaultTime": true },
+          { "defaultDate": true }
+        ]
+      },
+      "actions": [
+        { "due": null }
+      ]
+    },
+    {
+      "name": "Tasks in reading have no due date by default",
+      "condition": {
+        "and": [
+          { "project": "/\\breading\\b/i" },
+          { "defaultTime": true },
+          { "defaultDate": true }
+        ]
+      },
+      "actions": [
+        { "due": null }
       ]
     }
   ]
