@@ -1,4 +1,11 @@
 const TaskParser = require('js/TaskParser');
+jest.mock('js/RuleManager', () => {
+    return function () {
+        this.applyRules = function (task) {
+            return task;
+        }
+    }
+});
 
 function expectDate(obj, year, month, date) {
     expect(obj.getFullYear()).toBe(year);
