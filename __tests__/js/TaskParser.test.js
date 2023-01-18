@@ -38,11 +38,11 @@ test('Reasonable defaults', () => {
         tagNames: [],
         note: '',
         flagged: false,
-        contextSpec: ['work', 'general'],
+        contextSpec: [],
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
 });
 
 test('Sample 1', () => {
@@ -151,11 +151,11 @@ test('Sample 7', () => {
         tagNames: ['tagname1'],
         note: '',
         flagged: false,
-        contextSpec: ['work', 'general'],
+        contextSpec: [],
         completed: false,
         primaryTagName: 'tagname1'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 15, 0);
+    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
 })
 
 test('Sample 8', () => {
@@ -164,14 +164,14 @@ test('Sample 8', () => {
     var task = parser.parse(input);
     expectTask(task, {
         name: 'Expect task name',
-        tagNames: ['waiting', 'tagname1'],
+        tagNames: ['tagname1'],
         note: '',
         flagged: false,
-        contextSpec: ['work', 'general'],
+        contextSpec: [],
         completed: false,
-        primaryTagName: 'waiting'
+        primaryTagName: 'tagname1'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 15, 0);
+    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
 })
 
 test('Phone number support in task & notes', () => {
@@ -183,11 +183,11 @@ test('Phone number support in task & notes', () => {
         tagNames: [],
         note: '(805) 123-1234\np: (800) 867-5309\np: (805) 123-1234',
         flagged: false,
-        contextSpec: ['work', 'general'],
+        contextSpec: [],
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
 });
 
 test('Should ignore number strings that are NOT phone numbers.', () => {
@@ -199,11 +199,11 @@ test('Should ignore number strings that are NOT phone numbers.', () => {
         tagNames: [],
         note: 'https://kryterion.force.com/support/s/contactsupport?language=en_US&_ga=2.203236369.1088963720.1661209194-471399446.1641846271',
         flagged: false,
-        contextSpec: ['work', 'general'],
+        contextSpec: [],
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
 });
 
 test('Should correctly populate completion date & done status, even with tags', () => {
@@ -228,10 +228,6 @@ test("Exclamation point shouldn't break parsing.", () => {
     expect(task.name).toBe('I want to be an Air Force Ranger!');
 })
 
-/**
- * TODO: Should mock out Date() to guarantee that time lines up. Danger if this runs in last few ms before
- * new minute.
- */
 test("Support 'now' as due date", () => {
     var input = "Poop // .house :home now";
     var parser = new TaskParser();
@@ -245,112 +241,7 @@ test('Should ignore dates in description, honor dates in metadata', () => {
     var input = "Ignore this date 9/10 // 11/12";
     var parser = new TaskParser();
     var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 10, 12, 15, 0);
-});
-
-test('Should auto-set the due date on .work tasks to 3pm', () => {
-    var input = "work task"; // .work project is currently, unfortunately, detected as an empty context
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
-});
-
-test('Should set due date on errands to 11am', () => {
-    var input = "errand // .house :errands";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
-});
-
-test('Should set the time on :waiting tasks to 10pm', () => {
-    var input = "waiting task // .house :home :waiting";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 22, 0);
-});
-
-test('Should set the time on .work tasks to 3pm', () => {
-    var input = 'work task // .work';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 15, 0);
-});
-
-test('Should NOT set the time on .work tasks if time is specified', () => {
-    var input = 'work task // .work 10am';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 10, 0);
-});
-
-test('Should set the time on .housekeeping tasks to 11am', () => {
-    var input = 'work task // .housekeeping';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
-});
-
-test('Should set the time on .house :home tasks to 9pm', () => {
-    var input = 'work task // .house :home';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 11, 0);
-});
-
-test('Should NOT set the time on .housekeeping tasks if time is specified', () => {
-    var input = 'work task // .housekeeping 5am';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 5, 0);
-});
-
-test('Should NOT set the time on :waiting tasks if time is specified', () => {
-    var input = 'package // .house :waiting';
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 0, 1, 22, 0);
-});
-
-
-test('If the context is a JIRA ticket, context should be ["work", "Jira Ticket"]', () => {
-    var input = "jira task // .THX-1138";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.contextSpec[0]).toEqual('work');
-    expect(task.contextSpec[1]).toEqual('THX-1138');
-});
-
-test('Should auto-detect Jira tickets & put in context.', () => {
-    var input = "LOE for THX-1138";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.contextSpec[0]).toEqual('work');
-    expect(task.contextSpec[1]).toEqual('THX-1138');
-});
-
-test('Should auto-detect Jira tickets & put in context UNLESS context is already specified.', () => {
-    var input = "LOE for THX-1138 // .THX-1138";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.contextSpec.length).toBe(2);
-    expect(task.contextSpec[0]).toEqual('work');
-    expect(task.contextSpec[1]).toEqual('THX-1138');
-});
-
-test('Should default context to .work.general', () => {
-    var input = "task";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.contextSpec[0]).toEqual('work');
-    expect(task.contextSpec[1]).toEqual('general');
-});
-
-test('Should add a default parent task of "general" to tasks in Work project', () => {
-    var input = "task // .work";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.contextSpec[0]).toEqual('work');
-    expect(task.contextSpec[1]).toEqual('general');
+    expectDateTime(task.dueDate, 2021, 10, 12, 19, 0);
 });
 
 test('Should respect relative days, result in due date of 8/5/2028', () => {
@@ -383,48 +274,6 @@ test('Should respect relative weeks, result in due date of 7/31/2028', () => {
     var task = parser.parse(input);
     expectDate(task.dueDate, 2028, 6, 27);
     expect(task.dueDate.isDefaultDate).toBeFalsy();
-});
-
-/**
- * This feature is janky AF & I don't like it.
- */
-test('Honor :notdue tag, indicating that no due date should be added', () => {
-    var input = "task // :notdue";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.dueDate).toBeNull();
-    expect(task.tagNames).not.toContain('notdue');
-});
-
-/**
- * Items in Movies & Reading are not due by default.
- */
-test('Tasks in Movies are not due by default.', () => {
-    var input = "Miller's Crossing // .Movies";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.dueDate).toBeNull();
-});
-
-test('Tasks in Movies are not due by default, but honor specified due date.', () => {
-    var input = "Miller's Crossing // .Movies 7/27/2028";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDate(task.dueDate, 2028, 6, 27);
-});
-
-test('Tasks in Reading are not due by default.', () => {
-    var input = "Miller's Crossing // .Reading";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expect(task.dueDate).toBeNull();
-});
-
-test('Tasks in Reading are not due by default, but honor specified due date.', () => {
-    var input = "Miller's Crossing // .Reading 7/27/2028";
-    var parser = new TaskParser();
-    var task = parser.parse(input);
-    expectDate(task.dueDate, 2028, 6, 27);
 });
 
 test('Tolerate missing space after meta delimiter', () => {
