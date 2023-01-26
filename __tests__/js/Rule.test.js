@@ -131,20 +131,6 @@ test('condition: tag', () => {
     expectConditionMatch(string, { tag: 'other' }, false);
 });
 
-test('condition: "default-date"', () => {
-    expectConditionMatch('task', { 'default-date': true }, true);
-    expectConditionMatch('task', { 'default-date': false }, false);
-    expectConditionMatch('task // today', { 'default-date': true }, false);
-    expectConditionMatch('task // today', { 'default-date': false }, true);
-});
-
-test('condition: "default-time"', () => {
-    expectConditionMatch('task', { 'default-time': true }, true);
-    expectConditionMatch('task', { 'default-time': false }, false);
-    expectConditionMatch('task // 4pm', { 'default-time': true }, false);
-    expectConditionMatch('task // 4pm', { 'default-time': false }, true);
-});
-
 test('condition: no-project', () => {
     expectConditionMatch('task', { 'no-project': true }, true);
     expectConditionMatch('task', { 'no-project': false }, false);

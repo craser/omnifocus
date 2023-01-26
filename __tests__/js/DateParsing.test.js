@@ -2,14 +2,14 @@ const DateParser = require('js/DateParser');
 
 function checkExpectedDay(specifiers, expectedDayIndex) {
     specifiers.forEach((input) => {
-        var date = new DateParser().parseDate(input);
+        var date = new DateParser().parseDueDate(input);
         expect(date.getDay()).toBe(expectedDayIndex);
         expect(date.getTime()).toBeGreaterThanOrEqual(new Date().getTime()); // calls mocked Date.
     })
 }
 
 function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate) {
-    var date = new DateParser().parseDate(specifier);
+    var date = new DateParser().parseDueDate(specifier);
     expect(date.getFullYear()).toBe(expectedYear);
     expect(date.getMonth()).toBe(expectedMonth);
     expect(date.getDate()).toBe(expectedDate);
@@ -28,13 +28,11 @@ test('parseTask should correctly interpret "now" as due date', () => {
 
 test('parseTask should correctly interpret "tomorrow" as due date', () => {
     // new Date() always returns 1/1/2021 at 12:00 AM, PST
-    checkExpectedDate('', 2021, 0, 1); // check premises
     checkExpectedDate('tomorrow', 2021, 0, 2);
 });
 
 test('parseTask should correctly interpret "tmw" as due date', () => {
     // new Date() always returns 1/1/2021 at 12:00 AM, PST
-    checkExpectedDate('', 2021, 0, 1); // check premises
     checkExpectedDate('tmw', 2021, 0, 2);
 });
 
@@ -46,14 +44,12 @@ test('Honor ex. 10pm as time spec', () => {
 });
 
 test('Honor relative time in hrs', () => {
-    checkExpectedDate('', 2021, 0, 1); // check assumptions
     checkExpectedTime('9hrs', 9, 0); // basic
     checkExpectedTime('15hrs', 15, 0); // cross to PM
     checkExpectedTime('30hrs', 6, 0); // cross to next day
 });
 
 test('Honor relative time in min', () => {
-    checkExpectedDate('', 2021, 0, 1); // check assumptions
     checkExpectedTime('45min', 0, 45);
     checkExpectedTime('90min', 1, 30);
 });
@@ -114,11 +110,12 @@ test('Honor specifiers for Sunday', () => {
     checkExpectedDay(specifiers, 0);
 });
 
-test('If an execption is thrown during date parsing, return the default date.', () => {
+test('If an execption is thrown during date parsing, return null.', () => {
     var originalTest = RegExp.prototype.test; // Save the original implementation
     try {
         RegExp.prototype.test = function () { throw "MOCK"; }; // Force the error
-        checkExpectedDate('', 2021, 0, 1);
+        var date = new DateParser().parseDueDate('');
+        expect(date).toBeNull();
     }
     finally {
         RegExp.prototype.test = originalTest; // Restore the original.
@@ -126,46 +123,30 @@ test('If an execption is thrown during date parsing, return the default date.', 
     }
 });
 
-test('If no date/time is specified, returned date should be flagged with isDefaultDate & isDefaultTime', () => {
+test('If no date/time is specified, returned date should be null', () => {
      // default both date and time
     let date = new DateParser().parseDueDate('');
-    expect(date.isDefaultDate).toBeTruthy();
-    expect(date.isDefaultTime).toBeTruthy();
+    expect(date).toBeNull();
 });
 
 test('If only a time is specified, date should be flagged with isDefaultDate, but NOT isDefaultTime', () => {
     let date = new DateParser().parseDueDate('4pm');
-    expect(date.isDefaultDate).toBeTruthy();
-    expect(date.isDefaultTime).toBeFalsy();
-});
-
-test('If only a date is specified, date should be flagged with isDefaultTime, but NOT isDefaultDate', () => {
-    let date = new DateParser().parseDueDate('8/2/2022');
-    expect(date.isDefaultDate).toBeFalsy();
-    expect(date.isDefaultTime).toBeTruthy();
+    checkExpectedDate('4pm', 2021, 0, 1);
+    checkExpectedTime('4pm', 16, 0);
 });
 
 test('If an exception is thrown looking for days of the week, return false.', () => {
     var originalFind = Array.prototype.find;
     try {
         Array.prototype.find = function () { throw "MOCK"; };
-        checkExpectedDate('wednesday', 2021, 0, 1); // Should return default date.
+        var date = new DateParser().parseDueDate('wednesday');
+        expect(date).toBeFalsy();
     }
     finally {
         Array.prototype.find = originalFind;
         [1, 2, 3].find((x) => true); // paranoia
     }
 
-});
-
-test('Default date should be today at 7pm', () => {
-    var date = new DateParser().getDefaultDate();
-    expect(date.getFullYear()).toBe(2021);
-    expect(date.getMonth()).toBe(0);
-    expect(date.getDate()).toBe(1);
-    expect(date.getHours()).toBe(19);
-    expect(date.getMinutes()).toBe(0);
-    expect(date.getSeconds()).toBe(0);
 });
 
 /**

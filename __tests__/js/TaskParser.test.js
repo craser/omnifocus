@@ -42,7 +42,7 @@ test('Reasonable defaults', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expect(task.dueDate).toBeFalsy();
 });
 
 test('Support "today" as due date', () => {
@@ -57,9 +57,7 @@ test('Support "today" as due date', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
-    expect(task.dueDate.isDefaultDate).toBeFalsy();
-    expect(task.dueDate.isDefaultTime).toBeTruthy();
+    expectDate(task.dueDate, 2021, 0, 1);
 });
 
 test('Support "tomorrow" and "tmw" as due date', () => {
@@ -75,9 +73,7 @@ test('Support "tomorrow" and "tmw" as due date', () => {
             completed: false,
             primaryTagName: null
         });
-        expectDateTime(task.dueDate, 2021, 0, 2, 19, 0);
-        expect(task.dueDate.isDefaultDate).toBeFalsy();
-        expect(task.dueDate.isDefaultTime).toBeTruthy();
+        expectDate(task.dueDate, 2021, 0, 2);
     });
 });
 
@@ -191,7 +187,7 @@ test('Sample 7', () => {
         completed: false,
         primaryTagName: 'tagname1'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
+    expectDate(task.dueDate, 2021, 0, 5);
 })
 
 test('Sample 8', () => {
@@ -207,7 +203,7 @@ test('Sample 8', () => {
         completed: false,
         primaryTagName: 'tagname1'
     });
-    expectDateTime(task.dueDate, 2021, 0, 5, 19, 0);
+    expectDate(task.dueDate, 2021, 0, 5);
 })
 
 test('Phone number support in task & notes', () => {
@@ -223,7 +219,7 @@ test('Phone number support in task & notes', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expect(task.dueDate).toBeNull();
 });
 
 test('Should ignore number strings that are NOT phone numbers.', () => {
@@ -239,7 +235,7 @@ test('Should ignore number strings that are NOT phone numbers.', () => {
         completed: false,
         primaryTagName: null
     });
-    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expect(task.dueDate).toBeNull();
 });
 
 test('Should correctly populate completion date & done status, even with tags', () => {
@@ -277,7 +273,7 @@ test('Should ignore dates in description, honor dates in metadata', () => {
     var input = "Ignore this date 9/10 // 11/12";
     var parser = new TaskParser();
     var task = parser.parse(input);
-    expectDateTime(task.dueDate, 2021, 10, 12, 19, 0);
+    expectDate(task.dueDate, 2021, 10, 12);
 });
 
 test('Should respect relative days, result in due date of 8/5/2028', () => {

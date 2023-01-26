@@ -17,13 +17,13 @@ function DayOfWeek(name, pattern, index) {
 }
 
 /**
- * @return Date - Today at 7PM.
+ * TODO: REMOVE getDefaultDate()
+ * Keeping this just for debugging, but should
+ * be replaced with basic `new Date()` call.
+ * @return Date - now.
  */
 function getDefaultDate() {
     var date = new Date();
-    date.setHours(19, 0, 0);
-    date.isDefaultDate = true;
-    date.isDefaultTime = true;
     return date;
 }
 
@@ -37,21 +37,6 @@ function parseDayOfWeek(meta) {
         }
     });
     return date;
-}
-
-/**
- * Retrieves a Date object from the given metadata string.
- * @param meta
- * @returns {Date} Formatted date. (ex: 01/14/2021)
- */
-function parseDate(meta) {
-    try {
-        let baseDate = parseBaseDate(meta);
-        let date = applyDateModifiers(baseDate, meta);
-        return date;
-    } catch (e) {
-        return getDefaultDate();
-    }
 }
 
 function parseBaseDate(meta) {
@@ -78,29 +63,28 @@ function parseBaseDate(meta) {
         date.setMonth(parseInt(month) - 1);
         date.setDate(day);
         date.setFullYear(year);
-        date.isDefaultDate = false;
         return date;
-    } else {
-        return getDefaultDate();
     }
 }
 
-function applyDateModifiers(date, meta) {
+function applyDateModifiers(baseDate, meta) {
+    let modDate = baseDate || getDefaultDate();
     if (/next/i.test(meta)) {
-        date.setDate(new Date().getDate());
-        date.isDefaultDate = false;
+        modDate.setDate(new Date().getDate());
+        return modDate;
     } else if (/[+-]?\d+\s?days?/i.test(meta)) {
         var line = meta.match(/([+-]?\d+)\s?days?/i);
         var days = parseInt(line[1]);
-        date.setDate(date.getDate() + days);
-        date.isDefaultDate = false;
+        modDate.setDate(modDate.getDate() + days);
+        return modDate;
     } else if (/[+-]?\d+\s?weeks?/i.test(meta)) {
         var line = meta.match(/([+-]?\d+)\s?weeks?/i);
         var days = parseInt(line[1]) * 7;
-        date.setDate(date.getDate() + days);
-        date.isDefaultDate = false;
+        modDate.setDate(modDate.getDate() + days);
+        return modDate;
+    } else {
+        return baseDate;
     }
-    return date;
 }
 
 function hasDayOfWeek(meta) {
@@ -169,57 +153,38 @@ function parseTime(meta) {
     }
 }
 
-function parseDueDate(meta) {
-    try {
-        var date = parseDate(meta);
-        var time = parseTime(meta);
-        if (time) {
-            date.isDefaultTime = false;
-            date.setHours(time.hours, time.minutes, time.seconds);
-        } else {
-            date.isDefaultTime = true;
-            date.setHours(19, 0, 0); // 07:00 PM // TODO: Pull h, m, s from getDefaultDate().
-        }
-        return date;
-    } catch (e) {
-        var date = getDefaultDate();
-        return date;
+function applyTime(baseDate, meta) {
+    var time = parseTime(meta);
+    if (time) {
+        baseDate = baseDate || getDefaultDate();
+        baseDate.setHours(time.hours, time.minutes, time.seconds);
     }
+    return baseDate;
 }
 
-function overrideDate(date, meta) {
-    var override = parseDueDate(meta);
-    if (meta == null) {
-        return null;
-    }
-    if (date.isDefaultDate) {
-        date.setDate(override.getDate());
-        date.setMonth(override.getMonth());
-        date.setFullYear(override.getFullYear());
-    }
-    if (date.isDefaultTime) {
-        date.setHours(override.getHours());
-        date.setMinutes(override.getMinutes());
-        date.setSeconds(override.getSeconds());
-        date.isDefaultTime = override.isDefaultTime;
-    }
-    return date;
+function parseDueDate(meta) {
+    return overrideDate(null, meta);
 }
 
 /**
- * Retrieves the metadata portaion (everything after the '//') from the input string.
- * @param string
- * @returns {*}
+ * @param date
+ * @param meta
+ * @returns {null|*}
  */
-function getMeta(string) {
-    var meta = string.replace(/^.*?((\/\/.*?)(\/\*\*.*|$)|$)/, '$2');
-    return meta;
+function overrideDate(date, meta) {
+    try {
+        let baseDate = parseBaseDate(meta) || date;
+        let modeDate = applyDateModifiers(baseDate, meta);
+        let timeDate = applyTime(modeDate, meta);
+        return timeDate;
+    } catch (e) {
+        return date;
+    }
 }
 
 function DateParser() {
     this.parseDueDate = parseDueDate;
-    this.parseDate = parseDate;
-    this.parseTime = parseTime;
+    this.parseTime = parseTime; // exposed only for testing. TODO: remove
     this.getDefaultDate = getDefaultDate;
     this.overrideDate = overrideDate;
 }
