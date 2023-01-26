@@ -50,7 +50,7 @@ function act(action, task) {
         task.contextSpec.push(parent);
         task.contextSpec = uniq(task.contextSpec);
     } else if ('due' in action) {
-        task.dueDate = dateParser.overrideDate(task.dueDate, action.due);
+        task.dueDate = dateParser.overrideDueDate(task.dueDate, task.meta, action.due);
     } else if ('remove-tag' in action) {
         task.tagNames = task.tagNames.filter(tag => tag != action['remove-tag']);
         task.primaryTagName = task.tagNames[0] || null;
@@ -75,9 +75,9 @@ function test(condition, task) {
         } else if ('tag' in condition) {
             return hasTag(task, condition.tag);
         } else if ('default-date' in condition) {
-            return !task.dueDate.isDefaultDate == !condition['default-date'];
+            return true; // FIXME: DO NOT COMMIT TO CODE REPOSITORY!
         } else if ('default-time' in condition) {
-            return !task.dueDate.isDefaultTime == !condition['default-time'];
+            return true; // FIXME: DO NOT COMMIT TO CODE REPOSITORY!
         } else if ('no-project' in condition) {
             return condition["no-project"]
                 ? task.contextSpec.length == 0

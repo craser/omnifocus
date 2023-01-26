@@ -54,7 +54,7 @@ function parseBaseDate(meta) {
     } else if (hasDayOfWeek(meta)) {
         var date = parseDayOfWeek(meta);
         return date;
-    } else if (meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/)) {
+    } else if (/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/.test(meta)) {
         var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
         var month = line[1];
         var day = line[2];
@@ -65,6 +65,17 @@ function parseBaseDate(meta) {
         date.setFullYear(year);
         return date;
     }
+}
+
+function applyDateSpecifier(baseDate, meta) {
+    let specifiedDate = parseBaseDate(meta);
+    if (specifiedDate) {
+        baseDate = baseDate || getDefaultDate();
+        baseDate.setFullYear(specifiedDate.getFullYear());
+        baseDate.setMonth(specifiedDate.getMonth());
+        baseDate.setDate(specifiedDate.getDate());
+    }
+    return baseDate;
 }
 
 function applyDateModifiers(baseDate, meta) {
@@ -163,30 +174,38 @@ function applyTime(baseDate, meta) {
 }
 
 function parseDueDate(meta) {
-    return overrideDate(null, meta);
-}
-
-/**
- * @param date
- * @param meta
- * @returns {null|*}
- */
-function overrideDate(date, meta) {
     try {
-        let baseDate = parseBaseDate(meta) || date;
+        let baseDate = parseBaseDate(meta) || null;
         let modeDate = applyDateModifiers(baseDate, meta);
         let timeDate = applyTime(modeDate, meta);
         return timeDate;
     } catch (e) {
-        return date;
+        return null;
     }
+}
+
+function overrideDueDate(currentDueDate, baseMeta, overrideMeta) {
+    // oddball special case: if the override is null, that means
+    // we're clearing the due date UNLESS there's a base date
+    let specifiedDate = parseBaseDate(baseMeta);
+    if (!specifiedDate && !overrideMeta) {
+        return null;
+    }
+
+    let dueDate = currentDueDate;
+    dueDate = applyDateSpecifier(dueDate, overrideMeta);
+    dueDate = applyDateSpecifier(dueDate, baseMeta);
+    dueDate = applyDateModifiers(dueDate, overrideMeta);
+    dueDate = applyDateModifiers(dueDate, baseMeta);
+    dueDate = applyTime(dueDate, overrideMeta);
+    dueDate = applyTime(dueDate, baseMeta);
+    return dueDate;
 }
 
 function DateParser() {
     this.parseDueDate = parseDueDate;
     this.parseTime = parseTime; // exposed only for testing. TODO: remove
-    this.getDefaultDate = getDefaultDate;
-    this.overrideDate = overrideDate;
+    this.overrideDueDate = overrideDueDate;
 }
 
 module.exports = DateParser;

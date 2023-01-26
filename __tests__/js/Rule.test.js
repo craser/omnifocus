@@ -57,9 +57,7 @@ test('sanity check', () => {
  *   - name
  *   - project
  *   - tag
- *   - 'default-date'
- *   - 'default-time'
- *   - no-project
+  *   - no-project
  *   - no-parent
  */
 function expectConditionMatch(string, condition, expectMatch) {
@@ -244,6 +242,35 @@ test('action: due', () => {
         primaryTagName: null,
     });
     expectDate(task.dueDate, 2021, 0, 1);
+});
+
+test('action: keep specified due date', () => {
+    let task = applyActions('task // 7/22/2024', [{ due: 'today' }]);
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null,
+    });
+    expectDate(task.dueDate, 2024, 6, 22);
+});
+
+test('action: nullify due date', () => {
+    // make the task due today, then nullify that
+    let task = applyActions('task', [{ due: 'today' }, { due: null }]);
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null,
+    });
+    expect(task.dueDate).toBe(null);
 });
 
 test('action: remove-tag', () => {

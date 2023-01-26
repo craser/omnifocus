@@ -45,8 +45,6 @@ function expectRulesResult(actualInput, expectedInput) {
     expect(task.completed).toBe(expected.completed);
     expect(task.primaryTagName).toBe(expected.primaryTagName);
     expect(task.dueDate.toString()).toBe(expected.dueDate.toString());
-    //expect(task.dueDate.isDefaultDate).toBe(expected.dueDate.isDefaultDate);
-    //expect(task.dueDate.isDefaultTime).toBe(expected.dueDate.isDefaultTime);
 }
 
 test('By default, place tasks in .work.general, due today at 3pm', () => {
@@ -63,10 +61,17 @@ test('By default, place tasks in .work.general, due on the specified day by 3pm'
     );
 })
 
-test('Tag Expecting tasks as :waiting', () => {
+test('Tag Expecting tasks as :waiting, due at 10pm', () => {
     expectRulesResult(
-        'Expect task name // :tagname1 tuesday',
-        'Expect task name // .work.general :tagname1 :waiting tuesday 3pm'
+        'Expect task name // .proj :tagname1 tuesday',
+        'Expect task name // .proj :tagname1 :waiting tuesday 10pm'
+    );
+})
+
+test('Tag Expecting tasks as :waiting, due at 10pm unless otherwise specified', () => {
+    expectRulesResult(
+        'Expect task name // :tagname1 tuesday 4pm',
+        'Expect task name // .work.general :tagname1 :waiting tuesday 4pm'
     );
 })
 
@@ -86,8 +91,8 @@ test('Should set due date on errands to 11am', () => {
 
 test('Should set the time on :waiting tasks to 10pm', () => {
     expectRulesResult(
-        "waiting task // .house :home :waiting",
-        "waiting task // .house :home :waiting today 10pm"
+        "waiting task // .proj :home :waiting",
+        "waiting task // .proj :home :waiting today 10pm"
     );
 });
 
@@ -97,6 +102,13 @@ test('Should set the time on .work tasks to 3pm', () => {
         'work task // .work.general today 3pm'
     );
 });
+
+test('Should set the time on .work tasks to 3pm, even if tagged as :waiting' , () => {
+    expectRulesResult(
+        'Expect task name // :tagname1 tuesday',
+        'Expect task name // .work.general :tagname1 :waiting tuesday 3pm'
+    );
+})
 
 test('Should NOT set the time on .work tasks if time is specified', () => {
     expectRulesResult(
@@ -128,8 +140,8 @@ test('Should NOT set the time on .housekeeping tasks if time is specified', () =
 
 test('Should NOT set the time on :waiting tasks if time is specified', () => {
     expectRulesResult(
-        'package // .house :waiting',
-        'package // .house :waiting 10pm'
+        'package // .proj :waiting 12pm',
+        'package // .proj :waiting 12pm'
     );
 });
 
@@ -187,7 +199,7 @@ test('Tasks in Movies are not due by default, but honor specified due date.', ()
     var input = "Miller's Crossing // .Movies 7/27/2028";
     var parser = new TaskParser();
     var task = parser.parse(input);
-    expectDate(task.dueDate, 2028, 6, 27);
+    expectDateTime(task.dueDate, 2028, 6, 27, 19, 0, 0);
 });
 
 test('Tasks in Reading are not due by default.', () => {

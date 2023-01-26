@@ -8,11 +8,15 @@ function checkExpectedDay(specifiers, expectedDayIndex) {
     })
 }
 
-function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate) {
-    var date = new DateParser().parseDueDate(specifier);
+function expectDate(date, expectedYear, expectedMonth, expectedDate) {
     expect(date.getFullYear()).toBe(expectedYear);
     expect(date.getMonth()).toBe(expectedMonth);
     expect(date.getDate()).toBe(expectedDate);
+}
+
+function checkExpectedDate(specifier, expectedYear, expectedMonth, expectedDate) {
+    var date = new DateParser().parseDueDate(specifier);
+    expectDate(date, expectedYear, expectedMonth, expectedDate);
 }
 
 function checkExpectedTime(specifier, expectedHours, expectedMinutes) {
@@ -171,5 +175,19 @@ test('Honor m/d/y date specifiers', () => {
     checkExpectedDate('05/15', 2021, 4, 15);
     // CAN specify a date in the past.
     checkExpectedDate('5/15/2002', 2002, 4, 15);
+});
+
+test('Nullify due date unless originally specified', () => {
+    let parser = new DateParser();
+    let date = parser.overrideDueDate('7/22/2023', null);
+    expect(date).not.toBeNull();
+    expectDate(date, 2023, 6, 22);
+});
+
+test('Override due date', () => {
+    let parser = new DateParser();
+    let date = parser.overrideDueDate('7/22/2023', '8/17/2024');
+    expect(date).not.toBeNull();
+    expectDate(date, 2023, 6, 22);
 });
 

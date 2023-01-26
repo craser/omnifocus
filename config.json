@@ -3,6 +3,21 @@
   "github": "https://github.com/craser/omnifocus",
   "rules": [
     {
+      "name": "All tasks due today by 7pm by default.",
+      "condition": { "value": true },
+      "actions": [{ "due": "today 7pm" }]
+    },
+    {
+      "name": "Tasks in movies or reading have no default due date.",
+      "condition": {
+        "or": [
+          { "project": "/\\bmovies\\b/i" },
+          { "project": "/\\breading\\b/i" }
+        ]
+      },
+      "actions": [{ "due": null }]
+    },
+    {
       "name": "Put Jira tickets in .work project",
       "condition": {
         "or": [
@@ -46,34 +61,29 @@
       ]
     },
     {
-      "name": "Tag expected tasks as :waiting",
+      "name": "Tag expected tasks as :waiting, due at 10pm",
       "condition": { "name": "/expect/i" },
       "actions": [
-        { "tag": "waiting" }
+        { "tag": "waiting" },
+        { "due": "10pm" }
+      ]
+    },
+    {
+      "name": ":waiting tasks are due at 10pm",
+      "condition": { "tag": "waiting" },
+      "actions": [
+        { "due": "10pm" }
       ]
     },
     {
       "name": "Work tasks due at 3pm",
       "condition": {
         "and": [
-          { "project": "/\\bwork\\b/" },
-          { "default-time": true }
+          { "project": "/\\bwork\\b/" }
         ]
       },
       "actions": [
         { "due": "3pm" }
-      ]
-    },
-    {
-      "name": "Waiting tasks due at 10pm",
-      "condition": {
-        "and": [
-          { "tag": "waiting" },
-          { "default-time": true }
-        ]
-      },
-      "actions": [
-        { "due": "10pm" }
       ]
     },
     {
@@ -92,8 +102,7 @@
       "name": "Errands due at 11am",
       "condition": {
         "and": [
-          { "tag": "errands" },
-          { "default-time": true }
+          { "tag": "errands" }
         ]
       },
       "actions": [
@@ -106,32 +115,6 @@
       "actions": [
         { "due": null },
         { "remove-tag": "notdue" }
-      ]
-    },
-    {
-      "name": "Tasks in movies have no due date by default",
-      "condition": {
-        "and": [
-          { "project": "/\\bmovies\\b/i" },
-          { "default-time": true },
-          { "default-date": true }
-        ]
-      },
-      "actions": [
-        { "due": null }
-      ]
-    },
-    {
-      "name": "Tasks in reading have no due date by default",
-      "condition": {
-        "and": [
-          { "project": "/\\breading\\b/i" },
-          { "default-time": true },
-          { "default-date": true }
-        ]
-      },
-      "actions": [
-        { "due": null }
       ]
     }
   ]

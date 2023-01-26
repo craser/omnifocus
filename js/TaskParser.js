@@ -54,6 +54,7 @@ function parseTask(string) {
     let isCompleted = parseIsCompleted(string);
     var task = {
         name: parseTaskName(string),
+        meta: meta,
         tagNames: getTagNames(meta),
         note: new NoteParser().parse(string),
         dueDate: new DateParser().parseDueDate(meta),
