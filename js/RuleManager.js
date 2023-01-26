@@ -4,7 +4,6 @@ const Rule = require('./Rule');
 const ParserConfig = require("./ParserConfig");
 
 /**
- * First cut at this feature. Hard-coding to play & decide what I want.
  * My day is currently blocked out like this:
  *     - 08:30am: morning meeting
  *     - 09:00am: breakfast, email, Slack
@@ -44,21 +43,22 @@ const ParserConfig = require("./ParserConfig");
 
  * @return {{}}
  */
-
-function applyRules(task) {
-    this.rules.forEach((rule) => {
-        task = rule.apply(task);
-    });
-    return task;
-}
-
-function parseRules(rulesConfig) {
-    return rulesConfig.map(rule => new Rule(rule));
-}
-
 function RuleManager() {
     let config = new ParserConfig();
-    this.rules = parseRules(config.getRulesConfig());
+    let rules = parseRules(config.getRulesConfig());
+
+
+    function applyRules(task) {
+        rules.forEach((rule) => {
+            task = rule.apply(task);
+        });
+        return task;
+    }
+
+    function parseRules(rulesConfig) {
+        return rulesConfig.map(rule => new Rule(rule));
+    }
+
     this.applyRules = applyRules;
 }
 

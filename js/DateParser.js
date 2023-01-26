@@ -55,7 +55,10 @@ function parseDate(meta) {
 }
 
 function parseBaseDate(meta) {
-    if (/tomorrow/i.test(meta)) {
+    if (/today/i.test(meta)) {
+        var date = new Date();
+        return date;
+    } else if (/tomorrow/i.test(meta)) {
         var date = new Date();
         date.setDate(date.getDate() + 1);
         return date;

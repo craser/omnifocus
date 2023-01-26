@@ -57,7 +57,7 @@
       "condition": {
         "and": [
           { "project": "/\\bwork\\b/" },
-          { "defaultTime": true }
+          { "default-time": true }
         ]
       },
       "actions": [
@@ -69,7 +69,7 @@
       "condition": {
         "and": [
           { "tag": "waiting" },
-          { "defaultTime": true }
+          { "default-time": true }
         ]
       },
       "actions": [
@@ -81,7 +81,7 @@
       "condition": {
         "and": [
           { "project": "/\\bhouse(keeping)?\\b/" },
-          { "defaultTime": true }
+          { "default-time": true }
         ]
       },
       "actions": [
@@ -93,7 +93,7 @@
       "condition": {
         "and": [
           { "tag": "errands" },
-          { "defaultTime": true }
+          { "default-time": true }
         ]
       },
       "actions": [
@@ -105,7 +105,7 @@
       "condition": { "tag": "notdue" },
       "actions": [
         { "due": null },
-        { "removeTag": "notdue" }
+        { "remove-tag": "notdue" }
       ]
     },
     {
@@ -113,8 +113,8 @@
       "condition": {
         "and": [
           { "project": "/\\bmovies\\b/i" },
-          { "defaultTime": true },
-          { "defaultDate": true }
+          { "default-time": true },
+          { "default-date": true }
         ]
       },
       "actions": [
@@ -126,8 +126,8 @@
       "condition": {
         "and": [
           { "project": "/\\breading\\b/i" },
-          { "defaultTime": true },
-          { "defaultDate": true }
+          { "default-time": true },
+          { "default-date": true }
         ]
       },
       "actions": [

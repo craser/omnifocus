@@ -38,7 +38,9 @@ function uniq(list) {
 function act(action, task) {
     if ('tag' in action) {
         task.tagNames.push(action.tag); // prepend to list
-        task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the list
+        if (task.primaryTagName == null) {
+            task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the list
+        }
     } else if ('project' in action) {
         let project = evaluate(action.project, task);
         task.contextSpec.unshift(project);
@@ -49,8 +51,9 @@ function act(action, task) {
         task.contextSpec = uniq(task.contextSpec);
     } else if ('due' in action) {
         task.dueDate = dateParser.overrideDate(task.dueDate, action.due);
-    } else if ('removeTag' in action) {
-        task.tagNames = task.tagNames.filter(tag => tag != action.removeTag);
+    } else if ('remove-tag' in action) {
+        task.tagNames = task.tagNames.filter(tag => tag != action['remove-tag']);
+        task.primaryTagName = task.tagNames[0] || null;
     }
     return task;
 }
@@ -63,16 +66,18 @@ function test(condition, task) {
             return condition.or.reduce((a, condition) => a || test(condition, task), false);
         } else if ('and' in condition) {
             return condition.and.reduce((a, condition) => a && test(condition, task), true);
+        } else if ('not' in condition) {
+            return !test(condition.not, task);
         } else if ('name' in condition) {
             return parsePattern(condition.name)(task.name);
         } else if ('project' in condition) {
             return parsePattern(condition.project)(task.contextSpec[0]);
         } else if ('tag' in condition) {
             return hasTag(task, condition.tag);
-        } else if ('defaultDate' in condition) {
-            return task.dueDate.isDefaultDate == condition.defaultDate;
-        } else if ('defaultTime' in condition) {
-            return task.dueDate.isDefaultTime == condition.defaultTime;
+        } else if ('default-date' in condition) {
+            return !task.dueDate.isDefaultDate == !condition['default-date'];
+        } else if ('default-time' in condition) {
+            return !task.dueDate.isDefaultTime == !condition['default-time'];
         } else if ('no-project' in condition) {
             return condition["no-project"]
                 ? task.contextSpec.length == 0

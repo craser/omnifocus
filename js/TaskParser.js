@@ -21,7 +21,7 @@ function getMeta(string) {
 
 function getTagNames(meta) {
     var tags = [];
-    meta.replace(/(\W|^)[#:](\w+)/g, function (m, W, t) {
+    meta.replace(/(\W|^)[#:]([\w\-]+)/g, function (m, W, t) {
         tags.push(t);
     });
     return tags;

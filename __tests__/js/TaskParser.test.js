@@ -45,6 +45,42 @@ test('Reasonable defaults', () => {
     expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
 });
 
+test('Support "today" as due date', () => {
+    var parser = new TaskParser();
+    var task = parser.parse('task // today');
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null
+    });
+    expectDateTime(task.dueDate, 2021, 0, 1, 19, 0);
+    expect(task.dueDate.isDefaultDate).toBeFalsy();
+    expect(task.dueDate.isDefaultTime).toBeTruthy();
+});
+
+test('Support "tomorrow" and "tmw" as due date', () => {
+    var parser = new TaskParser();
+    ['task // tomorrow', 'task // tmw'].forEach(input => {
+        var task = parser.parse(input);
+        expectTask(task, {
+            name: 'task',
+            tagNames: [],
+            note: '',
+            flagged: false,
+            contextSpec: [],
+            completed: false,
+            primaryTagName: null
+        });
+        expectDateTime(task.dueDate, 2021, 0, 2, 19, 0);
+        expect(task.dueDate.isDefaultDate).toBeFalsy();
+        expect(task.dueDate.isDefaultTime).toBeTruthy();
+    });
+});
+
 test('Sample 1', () => {
     var input = 'task name // :tagname1, :tagname2 .project 5/11/2023 11:22pm';
     var parser = new TaskParser();
@@ -289,4 +325,11 @@ test('Task with "next" as due date should get now as due date, and be flagged', 
     var task = parser.parse(input);
     expectDateTime(task.dueDate, 2021, 0, 1, 0, 0);
     expect(task.flagged).toBeTruthy();
+});
+
+test('Support dashes in tag names', () => {
+    var input = "task // :tag-name";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.tagNames[0]).toEqual('tag-name');
 });
