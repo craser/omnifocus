@@ -179,14 +179,14 @@ test('Honor m/d/y date specifiers', () => {
 
 test('Nullify due date unless originally specified', () => {
     let parser = new DateParser();
-    let date = parser.overrideDueDate('7/22/2023', null);
+    let date = parser.overrideDueDate(null, '7/22/2023', null);
     expect(date).not.toBeNull();
     expectDate(date, 2023, 6, 22);
 });
 
 test('Override due date', () => {
     let parser = new DateParser();
-    let date = parser.overrideDueDate('7/22/2023', '8/17/2024');
+    let date = parser.overrideDueDate(null, '7/22/2023', '8/17/2024');
     expect(date).not.toBeNull();
     expectDate(date, 2023, 6, 22);
 });

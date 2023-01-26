@@ -71,7 +71,7 @@ function applyDateSpecifier(baseDate, meta) {
     let specifiedDate = parseBaseDate(meta);
     if (specifiedDate) {
         baseDate = baseDate || getDefaultDate();
-        baseDate.setFullYear(specifiedDate.getFullYear());
+        baseDate.setYear(specifiedDate.getFullYear());
         baseDate.setMonth(specifiedDate.getMonth());
         baseDate.setDate(specifiedDate.getDate());
     }
