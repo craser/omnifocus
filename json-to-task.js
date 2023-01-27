@@ -132,16 +132,18 @@ function createOmniFocusTask(task) {
 }
 
 function parseDate(string) {
-    var date = new Date(string);
-    return date;
+    if (!string) {
+        return null;
+    } else {
+        var date = new Date(string);
+        return date;
+    }
 }
 
 function parseTask(json) {
     var task = JSON.parse(json);
     task.dueDate = parseDate(task.dueDate);
-    console.log(`parsing completion date: ${task.completionDate}`);
     task.completionDate = parseDate(task.completionDate);
-    console.log(`parsed completion date: ${task.completionDate}`);
     return task;
 }
 
