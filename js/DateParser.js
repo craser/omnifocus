@@ -40,7 +40,10 @@ function parseDayOfWeek(meta) {
 }
 
 function parseBaseDate(meta) {
-    if (/today/i.test(meta)) {
+    if (/\bnow\b/i.test(meta)) {
+        var date = new Date();
+        return date;
+    } else if (/today/i.test(meta)) {
         var date = new Date();
         return date;
     } else if (/tomorrow/i.test(meta)) {
@@ -80,7 +83,13 @@ function applyDateSpecifier(baseDate, meta) {
 
 function applyDateModifiers(baseDate, meta) {
     let modDate = baseDate || getDefaultDate();
-    if (/next/i.test(meta)) {
+    if (/\bnow\b/i.test(meta)) {
+        var now = new Date();
+        modDate.setYear(now.getFullYear());
+        modDate.setMonth(now.getMonth());
+        modDate.setDate(now.getDate());
+        return modDate;
+    } else if (/next/i.test(meta)) {
         modDate.setDate(new Date().getDate());
         return modDate;
     } else if (/[+-]?\d+\s?days?/i.test(meta)) {

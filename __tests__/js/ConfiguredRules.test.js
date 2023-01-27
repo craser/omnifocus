@@ -215,3 +215,11 @@ test('Tasks in Reading are not due by default, but honor specified due date.', (
     var task = parser.parse(input);
     expectDate(task.dueDate, 2028, 6, 27);
 });
+
+test('Tasks with "now" as specified date & time should be due now.', () => {
+    var input = "Miller's Crossing // .movies now";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    var now = new Date(); // Date is mocked in test setup
+    expectDateTime(task.dueDate, now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+});

@@ -273,6 +273,37 @@ test('action: nullify due date', () => {
     expect(task.dueDate).toBe(null);
 });
 
+test('action: should NOT nullify due date if "now" is specified', () => {
+    let task = applyActions('task // now', [{ due: null }]);
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null,
+    });
+    var now = new Date(); // Date is mocked in test setup
+    expectDateTime(task.dueDate, now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+});
+
+test('action: date modifier should NOT modify due date if "now" is specified', () => {
+    // due specifier includes a date, a date modifier, and a time specifier,
+    let task = applyActions('task // now', [{ due: '10/10/2030 5days 9pm' }]);
+    expectTask(task, {
+        name: 'task',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null,
+    });
+    var now = new Date(); // Date is mocked in test setup
+    expectDateTime(task.dueDate, now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+});
+
 test('action: remove-tag', () => {
     let task = applyActions('task // :test-tag', [{ 'remove-tag': 'test-tag' }]);
     expectTask(task, {
