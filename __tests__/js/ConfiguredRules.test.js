@@ -223,3 +223,21 @@ test('Tasks with "now" as specified date & time should be due now.', () => {
     var now = new Date(); // Date is mocked in test setup
     expectDateTime(task.dueDate, now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
 });
+
+/* TODO: Test loading user-specific config.
+
+test('Should pick up user-specfic config file', () => {
+    var input = 'task';
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expectTask(task, {
+        name: 'task',
+        tagNames: ['monster'],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: 'monster'
+    });
+});
+*/
