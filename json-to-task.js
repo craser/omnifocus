@@ -6,10 +6,11 @@ const DEFAULT_PARENT_TASK = 'general';
 
 function getProject(OmniFocus, prjName) {
     try {
-        var projects = OmniFocus.defaultDocument.projects.whose({ name: { _beginsWith: prjName } });
-        var project = projects.length ? projects[0] : null;
+        var projects = OmniFocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+        var project = projects.length ? projects[0]() : null;
         return project;
     } catch (e) {
+        console.log(e);
         return null;
     }
 }
@@ -86,8 +87,10 @@ function ensureContext(OmniFocus, parent, context, task) {
  */
 function parseContext(OmniFocus, contextSpec) {
     var context = [];
+    console.log(`contextSpec: [${contextSpec.map(x => `'${x}'`).join(', ')}]`);
     var project = getProject(OmniFocus, contextSpec[0]);
     if (!project) {
+        console.log(`no project found for '${contextSpec[0]}'`);
         context.push(DEFAULT_PROJECT); // first note in path should always be a project.
     } else {
         contextSpec.shift(); // discard the used name
