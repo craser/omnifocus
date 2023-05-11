@@ -1,0 +1,18 @@
+(function () {
+    function createChecklist(projectName, tasks) {
+        var list = projectNamed(projectName) || new Project(projectName);
+        list.tasks.forEach(t => t.markComplete());
+        tasks.forEach(function (task) {
+            new Task(task, list);
+        });
+    }
+
+    createChecklist('Power Outage Prep', [
+        'flashlights (3)',
+        'lanterns (2)',
+        'hotel options',
+        'restaurant?',
+        'take-out?',
+        'movie?',
+    ]);
+})();
