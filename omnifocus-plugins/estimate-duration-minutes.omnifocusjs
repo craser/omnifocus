@@ -1,0 +1,75 @@
+/*{
+	"type": "action",
+	"targets": ["omnifocus"],
+	"author": "Chris Raser",
+	"identifier": "io.raser.of.goblinToolsEstimate",
+	"version": "1",
+	"description": "Get a rough estimate in minuets from Goblin Tools.",
+	"label": "Auto-Estimate Minutes",
+	"shortLabel": "Auto-Estimate Minutes",
+	"paletteLabel": "Auto-Estimate Minutes",
+	"image": "gearshape.fill"
+}*/
+(() => {
+    /**
+     * Calls Goblin Tools's API & returns a text result like "60-90 minutes"
+     *
+     * @param task
+     * @param spiciness
+     * @returns {Promise<string | null>}
+     */
+    function getGoblinToolsEstimate(task) {
+        const options = { Text: task.name + ', in minutes', Spiciness: 1 };
+        let request = URL.FetchRequest.fromString('https://goblin.tools/api/Estimator');
+        Object.assign(request, {
+            method: 'POST',
+            bodyString: JSON.stringify(options),
+            headers: {
+                "accept": "*/*",
+                "accept-language": "en-US,en;q=0.9",
+                "content-type": "application/json",
+                "sec-ch-ua": "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\"121\", \"Chromium\";v=\"121\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"macOS\"",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "x-requested-with": "XMLHttpRequest",
+                "Referer": "https://goblin.tools/Estimator",
+                "Referrer-Policy": "strict-origin-when-cross-origin"
+            }
+        });
+
+        return request.fetch()
+            .then(response => {
+                return response.bodyString;
+            })
+            .then(text => {
+                console.log(`Goblin Tools estimate for "${task.name}": ${text}`);
+                const max = text.split(/\D+/).map(x => parseInt(x))
+                    .filter(x => x > 0)
+                    .sort((a, b) => b - a)
+                    .find(x => x > 0);
+                return max;
+            })
+    }
+
+    function estimate(task) {
+        return getGoblinToolsEstimate(task)
+            .then(minutes => {
+                if (minutes) {
+                    task.estimatedMinutes = minutes;
+                }
+            });
+    }
+
+    var action = new PlugIn.Action(function (selection, sender) {
+        selection.tasks.forEach(estimate);
+    });
+
+    action.validate = function (selection, sender) {
+        return (selection.tasks.length > 0);
+    };
+
+    return action;
+})();
