@@ -3,7 +3,7 @@
 	"targets": ["omnifocus"],
 	"author": "Chris Raser",
 	"identifier": "io.raser.of.goblinToolsEstimate",
-	"version": "1",
+	"version": "2",
 	"description": "Get a rough estimate in minuets from Goblin Tools.",
 	"label": "Auto-Estimate Minutes",
 	"shortLabel": "Auto-Estimate Minutes",
@@ -48,19 +48,31 @@
                 console.log(`Goblin Tools estimate for "${task.name}": ${text}`);
                 const max = text.split(/\D+/).map(x => parseInt(x))
                     .filter(x => x > 0)
-                    .sort((a, b) => b - a)
+                    .sort((a, b) => b - a) // biggest first
                     .find(x => x > 0);
                 return max;
             })
     }
 
     function estimate(task) {
-        return getGoblinToolsEstimate(task)
-            .then(minutes => {
-                if (minutes) {
+        if (task.tasks.length > 0) {
+            return estimateGroup(task.tasks)
+                .then(minutes => {
                     task.estimatedMinutes = minutes;
-                }
-            });
+                    return minutes;
+                })
+        } else {
+            return getGoblinToolsEstimate(task)
+                .then(minutes => {
+                    task.estimatedMinutes = minutes;
+                    return minutes;
+                });
+        }
+    }
+
+    function estimateGroup(tasks) {
+        return Promise.all(tasks.map(estimate))
+            .then(estimates => estimates.reduce((t, m) => t + m))
     }
 
     var action = new PlugIn.Action(function (selection, sender) {
