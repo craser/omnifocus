@@ -21,8 +21,8 @@
       "name": "Put Jira tickets in .work project",
       "condition": {
         "or": [
-          { "project": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" },
-          { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" }
+          { "project": "/\\b\\w{2,4}-\\d{3,4}\\b/" },
+          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" }
         ]
       },
       "actions": [
@@ -33,7 +33,7 @@
       "name": "Put Jira tickets in a ticket-specific parent task",
       "condition": {
         "or": [
-          { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" }
+          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" }
         ]
       },
       "actions": [
@@ -42,17 +42,17 @@
             "concatenate": [
               {
                 "match": {
-                  "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+                  "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
                 }
               },
-              ",: ",
+              ": ",
               {
                 "script": {
                   "command": "/Users/craser/bin/tickets/tk-get-jira-title",
                   "args": [
                     {
                       "match": {
-                        "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+                        "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
                       }
                     }
                   ]
