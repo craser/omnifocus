@@ -37,7 +37,30 @@
         ]
       },
       "actions": [
-        { "parent": { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } } }
+        {
+          "parent": {
+            "concatenate": [
+              {
+                "match": {
+                  "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+                }
+              },
+              ",: ",
+              {
+                "script": {
+                  "command": "/Users/craser/bin/tickets/tk-get-jira-title",
+                  "args": [
+                    {
+                      "match": {
+                        "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
       ]
     },
     {
