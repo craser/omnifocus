@@ -1,6 +1,6 @@
 'use strict'
 
-const CmdRunner = require('js/CmdRunner');
+const CmdRunner = require('./CmdRunner');
 const DateParser = require('./DateParser');
 const dateParser = new DateParser();
 
