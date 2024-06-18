@@ -1,5 +1,6 @@
 'use strict'
 
+const CmdRunner = require('js/CmdRunner');
 const DateParser = require('./DateParser');
 const dateParser = new DateParser();
 
@@ -25,6 +26,12 @@ function evaluate(value, task) {
         return value;
     } else if ('match' in value) {
         return test(value.match, task);
+    } else if ('concatenate' in value) {
+        return value.concatenate.map((v) => evaluate(v, task)).join('');
+    } else if ('script' in value) {
+        let spec = value['script'];
+        let args = spec.args.map((arg) => evaluate(arg, task));
+        return new CmdRunner().execSync(spec.command, args)
     } else {
         return value;
     }

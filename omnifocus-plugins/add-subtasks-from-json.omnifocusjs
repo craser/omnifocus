@@ -1,0 +1,57 @@
+/*{
+ "type": "action",
+ "targets": ["omnifocus"],
+ "author": "Chris Raser",
+ "identifier": "io.raser.of.AddSubtasksFromJson",
+ "version": "1",
+ "description": "Add Subtasks from JSON",
+ "label": "Add Subtasks from JSON",
+ "shortLabel": "Add Subtasks from JSON",
+ "paletteLabel": "Add Subtasks from JSON",
+ "image": "gearshape.fill"
+ }*/
+(() => {
+
+    function createTasks(tasks, parent) {
+        tasks.forEach(task => {
+            console.log(`Creating task: ${task.title}`);
+            const ofTask = new Task(task.title, parent);
+            try {
+                ofTask.dueDate = new Date(task.due);
+                if ('tasks' in task) {
+                    createTasks(task.tasks, ofTask);
+                }
+            } catch (ignored) {
+            }
+        });
+    }
+
+    /**
+     * Does the actual work associated with this plugin.
+     * @type {PlugIn.Action}
+     */
+    const action = new PlugIn.Action(function (selection, sender) {
+        try {
+            let parent = selection.tasks[0];
+            let json = Pasteboard.general.string;
+            let tasks = JSON.parse(json).tasks;
+            console.log(`pasting ${tasks.length} lines as checklist`);
+            createTasks(tasks, parent);
+        } catch (e) {
+            console.error('Error in PasteAsChecklist', e);
+            let notification = new Notification(`Error pasting as checklist: ${e}`);
+            notification.subtitle = 'Check the console for more information.';
+            notification.show();
+        }
+    });
+
+    /**
+     * Should this action currently be available?
+     * return Boolean
+     */
+    action.validate = function (selection, sender) {
+        return selection.tasks.length == 1;
+    };
+
+    return action;
+})();

@@ -15,6 +15,21 @@ jest.mock('js/RuleManager', () => {
     }
 });
 
+/**
+ * Mock the CmdRunner so that the Rule can execute scripts.
+ * @param obj
+ * @param year
+ * @param month
+ * @param date
+ */
+jest.mock('js/CmdRunner', () => {
+    return function () {
+        this.execSync = function (cmd, args) {
+            return `executed: ${cmd} ${args.join(' ')}`;
+        }
+    }
+});
+
 function expectDate(obj, year, month, date) {
     expect(obj.getFullYear()).toBe(year);
     expect(obj.getMonth()).toBe(month);
@@ -57,7 +72,7 @@ test('sanity check', () => {
  *   - name
  *   - project
  *   - tag
-  *   - no-project
+ *   - no-project
  *   - no-parent
  */
 function expectConditionMatch(string, condition, expectMatch) {
@@ -243,6 +258,37 @@ test('action: due', () => {
     });
     expectDate(task.dueDate, 2021, 0, 1);
 });
+
+test('action: parent & concatenate', () => {
+    let task = applyActions('ABCD-1234', [
+        {
+            parent: {
+                concatenate: [
+                    { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } },
+                    ': ',
+                    {
+                        script: {
+                            command: 'echo',
+                            args: [
+                                '-n',
+                                { "match": { "name": "/\\b\\w\\w\\w\\w?-\\d\\d\\d\\d?\\b/" } }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]);
+    expectTask(task, {
+        name: 'ABCD-1234',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: ['ABCD-1234: executed: echo -n ABCD-1234'],
+        completed: false,
+        primaryTagName: null
+    });
+})
 
 test('action: keep specified due date', () => {
     let task = applyActions('task // 7/22/2024', [{ due: 'today' }]);

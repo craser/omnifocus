@@ -1,3 +1,4 @@
+const TaskParser = require('../js/TaskParser');
 const jsonToTask = require('json-to-task');
 
 /**
@@ -11,25 +12,49 @@ function MockTag(name) {
     this.name = name;
 }
 
-var MockOmniFocus = {
-    defaultDocument: {
-        Tag: function (opts) {
-            this.name = opts.name;
-        },
-        Task: function (name) {
-            this.name = name;
-        },
-        tags: {
-            whose: function () {
-                return [new MockTag('mocktag')];
-            }
-        }
+const Tag = function (opts) {
+    this.name = opts.name;
+};
 
+class Storage {
+    length = 0;
+    #finder;
+
+    constructor(finder) {
+        this.#finder = finder;
+    }
+
+    push(x) {
+        this[length++] = x;
+    }
+
+    whose(query) {
+        return this.#finder(query);
+    }
+}
+
+let Task = function (name) {
+    this.name = name;
+};
+var MockOmniFocus = {
+    Tag,
+    Task,
+    defaultDocument: {
+        Tag,
+        Task,
+        tags: new Storage(({ name: { _beginsWith: tagName } }) => {
+            // return something we can do: tags[0]() = tag
+            // also return something we can: tags()[0] = tag
+            let tag = new MockTag(tagName);
+            let tags = (hack) => [tag]; // adding argument forces length to be 1
+            tags[0] = () => tag;
+            return tags;
+        })
     }
 };
 
 beforeAll(() => {
-    global.Application = function() {
+    global.Application = function () {
         return MockOmniFocus;
     };
 });
@@ -39,5 +64,6 @@ function runJsonToTask(input) {
 }
 
 test('can run', () => {
-    runJsonToTask('test // .house :home');
+    const task = new TaskParser().parse('test // .house :home');
+    runJsonToTask(JSON.stringify(task));
 })
