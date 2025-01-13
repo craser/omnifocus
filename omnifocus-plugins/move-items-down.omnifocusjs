@@ -2,13 +2,13 @@
 	"type": "action",
 	"targets": ["omnifocus"],
 	"author": "Chris Raser",
-	"identifier": "io.raser.of.MoveItemDown",
+	"identifier": "io.raser.of.MoveItemsDown",
 	"version": "2",
 	"description": "Move Selected Items Down One Position",
-	"label": "Move Item Down",
-	"shortLabel": "Move Item Down",
-	"paletteLabel": "Move Item Down",
-	"image": "arrow.up.circle.fill"
+	"label": "Move Items Down",
+	"shortLabel": "Move Items Down",
+	"paletteLabel": "Move Items Down",
+	"image": "arrow.down.circle.fill"
 }*/
 (() => {
     function getNextTask(task) {
@@ -16,11 +16,11 @@
         if (taskIndex === task.parent.children.length - 1) {
             return null; // there is no next task
         }
-        return task.parent.children[taskIndex - 1];
+        return task.parent.children[taskIndex + 1];
     }
 
     let action = new PlugIn.Action(function(selection, sender) {
-        const next = getNextTask(selection.tasks[0]);
+        const next = getNextTask(selection.tasks[selection.tasks.length - 1]);
         if (next) { // if there is a next task
             moveTasks(selection.tasks, next.after); // move the selected tasks after the next task
         }

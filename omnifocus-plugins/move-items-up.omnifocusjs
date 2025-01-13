@@ -2,12 +2,12 @@
 	"type": "action",
 	"targets": ["omnifocus"],
 	"author": "Chris Raser",
-	"identifier": "io.raser.of.MoveItemUp",
+	"identifier": "io.raser.of.MoveItemsUp",
 	"version": "2",
 	"description": "Move Selected Items Up One Position",
-	"label": "Move Item Up",
-	"shortLabel": "Move Item Up",
-	"paletteLabel": "Move Item Up",
+	"label": "Move Items Up",
+	"shortLabel": "Move Items Up",
+	"paletteLabel": "Move Items Up",
 	"image": "arrow.up.circle.fill"
 }*/
 (() => {
