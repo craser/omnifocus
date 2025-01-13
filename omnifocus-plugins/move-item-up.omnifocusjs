@@ -1,0 +1,38 @@
+/*{
+	"type": "action",
+	"targets": ["omnifocus"],
+	"author": "Chris Raser",
+	"identifier": "io.raser.of.MoveItemUp",
+	"version": "2",
+	"description": "Move Selected Item Up One Position",
+	"label": "Move Item Up",
+	"shortLabel": "Move Item Up",
+	"paletteLabel": "Move Item Up",
+	"image": "arrow.up.circle.fill"
+}*/
+(() => {
+
+    function getPreviousTask(task) {
+        const taskIndex = task.parent.children.indexOf(task);
+        if (taskIndex === 0) {
+            return null;
+        }
+        return task.parent.children[taskIndex - 1];
+    }
+
+    let action = new PlugIn.Action(function(selection, sender) {
+        const previous = getPreviousTask(selection.tasks[0]);
+        if (!previous) {
+            return;
+        } else {
+            moveTasks(selection.tasks, previous.before);
+        }
+    });
+
+    action.validate = function(selection, sender) {
+        // Enable the action only when at least one task is selected.
+        return (selection.tasks.length > 0);
+    };
+
+    return action;
+})();
