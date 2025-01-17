@@ -169,6 +169,18 @@ test('Honor relative time in weeks', () => {
     checkExpectedDate('3weeks', 2021,0, 22);
 });
 
+test('Honor relative time in months', () => {
+    checkExpectedDate('1month', 2021, 1, 1);
+    checkExpectedDate('3months', 2021, 3, 1);
+    checkExpectedDate('12months', 2022, 0, 1);
+    checkExpectedDate('17months', 2022, 5, 1);
+});
+
+test('Honor relative time in years', () => {
+    checkExpectedDate('1year', 2022, 0, 1);
+    checkExpectedDate('3years', 2024, 0, 1);
+});
+
 test('Honor m/d/y date specifiers', () => {
     // Without a year, should parse to a date in the future.
     checkExpectedDate('5/15', 2021, 4, 15);

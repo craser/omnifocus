@@ -1,13 +1,13 @@
 'use strict'
 
 const DAYS_OF_WEEK = [
-    new DayOfWeek('sunday', /(sun|sunday)/i, 0),
-    new DayOfWeek('monday', /(mon|monday)/i, 1),
-    new DayOfWeek('tuesday', /(tues|tuesday)/i, 2),
-    new DayOfWeek('wednesday', /(wed|wednesday)/i, 3),
-    new DayOfWeek('thursday', /(thr|thrs|thurs|thursday)/i, 4),
-    new DayOfWeek('friday', /(fri|friday)/i, 5),
-    new DayOfWeek('saturday', /(sat|saturday)/i, 6),
+    new DayOfWeek('sunday', /\b(sun|sunday)\b/i, 0),
+    new DayOfWeek('monday', /\b(mon|monday)\b/i, 1),
+    new DayOfWeek('tuesday', /\b(tues|tuesday)\b/i, 2),
+    new DayOfWeek('wednesday', /\b(wed|wednesday)\b/i, 3),
+    new DayOfWeek('thursday', /\b(thr|thrs|thurs|thursday)\b/i, 4),
+    new DayOfWeek('friday', /\b(fri|friday)\b/i, 5),
+    new DayOfWeek('saturday', /\b(sat|saturday)\b/i, 6),
 ];
 
 function DayOfWeek(name, pattern, index) {
@@ -101,6 +101,16 @@ function applyDateModifiers(baseDate, meta) {
         var line = meta.match(/([+-]?\d+)\s?weeks?/i);
         var days = parseInt(line[1]) * 7;
         modDate.setDate(modDate.getDate() + days);
+        return modDate;
+    } else if (/[+-]?\d+\s?months?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?months?/i);
+        var months = parseInt(line[1]);
+        modDate.setMonth(modDate.getMonth() + months);
+        return modDate;
+    } else if (/[+-]?\d+\s?years?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?years?/i);
+        var years = parseInt(line[1]);
+        modDate.setYear(modDate.getFullYear() + years);
         return modDate;
     } else {
         return baseDate;
