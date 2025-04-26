@@ -1,4 +1,4 @@
-#!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
+#!/usr/bin/env node
 
 /**
  * Assumes a 10-digit phone number (with optional +1 prefix) like those used in the US.

@@ -1,4 +1,4 @@
-#!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
+#!/usr/bin/env node
 
 function parseContextSpec(meta) {
     var regex = /^.*?\.([^\s]+)\b.*$/;

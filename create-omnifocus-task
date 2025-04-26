@@ -1,4 +1,4 @@
-#!/Users/craser/.nvm/versions/node/v10.23.0/bin/node
+#!/usr/bin/env node
 
 const { spawn } = require('child_process');
 const TaskParser = require('./js/TaskParser');
