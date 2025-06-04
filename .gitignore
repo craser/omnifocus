@@ -1,5 +1,6 @@
-.idea
 node_modules
-coverage
+.idea
 .DS_Store
-package-lock.json
+coverage
+.claude
+webhooks.config.json

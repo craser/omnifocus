@@ -1,8 +1,0 @@
-#!/bin/bash
-
-bin=`dirname $0`
-days_ago="21"
-for ((d = $days_ago; d >= 0; d--)); do
-    date=`date -v "-${d}d" "+%m/%d/%Y"`
-    $bin/daylog "✅ // $date .mood $*"
-done
