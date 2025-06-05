@@ -1,16 +1,17 @@
 // Setting up Global Mocks for Jest
-const getMockDate = (function (Date) {
-    return function (arg) {
-        if (arg) {
-            return new Date(arg);
+const RealDate = Date;
+
+global.Date = class extends RealDate {
+    constructor(...args) {
+        if (args.length === 0) {
+            super('2021-01-01T08:00:00.000Z');
         } else {
-            return new Date('2021-01-01T08:00:00.000Z');
+            super(...args);
         }
     }
-}(Date));
-
-global.Date = jest.fn((arg) => {
-    var mockDate = getMockDate(arg);
-    return mockDate;
-});
+    
+    static now() {
+        return new RealDate('2021-01-01T08:00:00.000Z').getTime();
+    }
+};
 

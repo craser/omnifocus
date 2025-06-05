@@ -2,8 +2,9 @@
 export default {
     collectCoverage: true,
     testMatch: [
-        '**/__tests__/**/*.js',
+        '**/__tests__/**/*.test.js',
     ],
+    setupFilesAfterEnv: ['<rootDir>/__tests__/JestSetup.js'],
     moduleFileExtensions: [
         'js',
     ],
