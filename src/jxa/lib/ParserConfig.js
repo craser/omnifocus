@@ -1,28 +1,23 @@
 'use strict'
 
 import { cat } from './system/files.js';
+import defaultConfig from '../../../config.json';
 
 function loadUserConfig() {
     try {
         const home = process.env['HOME'];
         const configPath = `${home}/.ofq-config.json`;
-        let json = cat(configPath);
-        let config = JSON.parse(json);
+        const json = cat(configPath);
+        const config = JSON.parse(json);
         return config;
     } catch (e) {
         return {}
     }
 }
 
-function loadDefaultConfig() {
-    let config = require('../../../config.json');
-    return config;
-}
-
 function loadConfig() {
     let userConfig = loadUserConfig();
-    let defaultConfig = loadDefaultConfig();
-    let config = Object.assign(defaultConfig, userConfig);
+    const config = Object.assign(defaultConfig, userConfig);
     return config;
 }
 
