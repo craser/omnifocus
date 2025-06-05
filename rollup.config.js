@@ -1,4 +1,5 @@
 import alias from '@rollup/plugin-alias';
+import json from '@rollup/plugin-json';
 import commonjs from 'rollup-plugin-commonjs';
 import executable from "rollup-plugin-executable"
 import fs from 'fs';
@@ -16,6 +17,7 @@ const promptImport = () => ({
         }
     }
 });
+
 
 // Read all JavaScript files from the src directory
 const production = process.env.NODE_ENV === 'production';
@@ -36,6 +38,7 @@ const buildRollupConfig = (srcDir, file, type) => ({
     ] : [],
     plugins: [
         promptImport(),
+        json(),
         alias({
             entries: [
                 { find: '~', replacement: path.resolve(__dirname) },
