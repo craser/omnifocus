@@ -1,6 +1,8 @@
 'use strict'
 
 const TaskParser = require('src/jxa/lib/TaskParser');
+const CmdRunner = require('src/jxa/lib/CmdRunner');
+
 const actualTaskParser = new TaskParser();
 const expectedTaskParser = (function () {
     let parser = new TaskParser();
@@ -10,13 +12,12 @@ const expectedTaskParser = (function () {
     return parser;
 }());
 
+beforeAll(() => {
+    CmdRunner.prototype.execSync = jest.fn();
+});
 
-jest.mock('src/jxa/lib/CmdRunner', () => {
-    return function () {
-        this.execSync = function (cmd, args) {
-            return `title of ${args[0]}`;
-        }
-    }
+beforeEach(() => {
+    CmdRunner.prototype.execSync.mockClear();
 });
 
 function expectDate(obj, year, month, date) {
@@ -163,10 +164,14 @@ test('If the context is a JIRA ticket, context should be ["work", "Jira Ticket"]
 });
 
 test('Should auto-detect Jira tickets & put in context.', () => {
+    CmdRunner.prototype.execSync.mockImplementation((c, args) => `title of ${args[0]}`);
     expectRulesResult(
         "LOE for THX-1138",
-        "LOE for THX-1138 // .work.THX-1138 today 3pm"
+        "LOE for THX-1138 // .work.'THX-1138: title of THX-1138' today 3pm"
     );
+    expect(CmdRunner.prototype.execSync).toHaveBeenCalledTimes(1);
+    expect(CmdRunner.prototype.execSync.mock.calls[0][0]).toMatch(/tk-get-jira-title$/);
+    expect(CmdRunner.prototype.execSync.mock.calls[0][1]).toEqual(['THX-1138']);
 });
 
 test('Should auto-detect Jira tickets & put in context UNLESS context is already specified.', () => {
