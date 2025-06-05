@@ -5,9 +5,12 @@ const DateParser = require('./DateParser.js');
 const dateParser = new DateParser();
 
 function getRegex(descriptor) {
-    try { // yeah, this is a hack
-        return eval(descriptor);
-    } catch (e) {
+    const isRegex = /\/(?<pattern>.*)\/(?<flags>[gimy])*$/;
+    if (isRegex.test(descriptor)) {
+        const { pattern, flags } = descriptor.match(isRegex).groups;
+        return new RegExp(pattern, flags);
+    } else {
+        // Treat the whole string as the pattern, no flags
         return new RegExp(descriptor);
     }
 }
@@ -46,7 +49,8 @@ function act(action, task) {
     if ('tag' in action) {
         task.tagNames.push(action.tag); // prepend to list
         if (task.primaryTagName == null) {
-            task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the list
+            task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the
+                                              // list
         }
     } else if ('project' in action) {
         let project = evaluate(action.project, task);
@@ -97,7 +101,7 @@ function test(condition, task) {
             throw new Error('Unknown condition: ' + JSON.stringify(condition));
         }
     }
-
+    
     let result = applyCondition(condition, task);
     console.log(`test: ${JSON.stringify(condition)} => ${result}`);
     return result;
@@ -111,7 +115,7 @@ class Rule {
     constructor(config) {
         this.config = config;
     }
-
+    
     apply(task) {
         console.log(`applying rule: ${this.config.name}`);
         if (test(this.config.condition, task)) {
