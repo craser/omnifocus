@@ -1,7 +1,7 @@
 'use strict'
 
-const CmdRunner = require('./CmdRunner');
-const DateParser = require('./DateParser');
+const CmdRunner = require('./CmdRunner.js');
+const DateParser = require('./DateParser.js');
 const dateParser = new DateParser();
 
 function getRegex(descriptor) {
@@ -107,22 +107,23 @@ function hasTag(task, tag) {
     return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
 }
 
-function apply(task) {
-    console.log(`applying rule: ${this.config.name}`);
-    if (test(this.config.condition, task)) {
-        console.log(`    rule matched: ${this.config.name}`);
-        this.config.actions.forEach(action => {
-            console.log(`        action: ${JSON.stringify(action)}`);
-            task = act(action, task);
-        });
+class Rule {
+    constructor(config) {
+        this.config = config;
     }
-    console.log(`result: ${JSON.stringify(task)}`);
-    return task;
-}
 
-function Rule(config) {
-    this.config = config;
-    this.apply = apply;
+    apply(task) {
+        console.log(`applying rule: ${this.config.name}`);
+        if (test(this.config.condition, task)) {
+            console.log(`    rule matched: ${this.config.name}`);
+            this.config.actions.forEach(action => {
+                console.log(`        action: ${JSON.stringify(action)}`);
+                task = act(action, task);
+            });
+        }
+        console.log(`result: ${JSON.stringify(task)}`);
+        return task;
+    }
 }
 
 module.exports = Rule;

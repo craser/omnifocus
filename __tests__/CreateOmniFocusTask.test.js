@@ -1,4 +1,4 @@
-const CreateOmniFocusTask = require('create-omnifocus-task');
+const CreateOmniFocusTask = require('src/jxa/create-omnifocus-task');
 
 jest.mock('child_process');
 

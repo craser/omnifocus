@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-const DateParser = require('./DateParser');
-const ContextParser = require('./ContextParser');
-const NoteParser = require('./NoteParser');
-const RuleManager = require('./RuleManager');
+const DateParser = require('./DateParser.js');
+const ContextParser = require('./ContextParser.js');
+const NoteParser = require('./NoteParser.js');
+const RuleManager = require('./RuleManager.js');
 
 function parseTaskName(string) {
     var name = string.replace(/\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
@@ -49,28 +49,29 @@ function parseIsFlagged(string) {
     }
 }
 
-function parseTask(string) {
-    var meta = getMeta(string);
-    let isCompleted = parseIsCompleted(string);
-    var task = {
-        name: parseTaskName(string),
-        meta: meta,
-        tagNames: getTagNames(meta),
-        note: new NoteParser().parse(string),
-        dueDate: new DateParser().parseDueDate(meta),
-        flagged: parseIsFlagged(string),
-        contextSpec: new ContextParser().parse(meta),
-        completed: isCompleted,
-        completionDate: (isCompleted ? new Date() : null),
-        primaryTagName: getPrimaryTagName(meta)
+class TaskParser {
+    constructor() {
+        this.rulesManager = new RuleManager();
     }
-    task = this.rulesManager.applyRules(task);
-    return task;
-}
 
-function TaskParser() {
-    this.rulesManager = new RuleManager();
-    this.parse = parseTask;
+    parse(string) {
+        var meta = getMeta(string);
+        let isCompleted = parseIsCompleted(string);
+        var task = {
+            name: parseTaskName(string),
+            meta: meta,
+            tagNames: getTagNames(meta),
+            note: new NoteParser().parse(string),
+            dueDate: new DateParser().parseDueDate(meta),
+            flagged: parseIsFlagged(string),
+            contextSpec: new ContextParser().parse(meta),
+            completed: isCompleted,
+            completionDate: (isCompleted ? new Date() : null),
+            primaryTagName: getPrimaryTagName(meta)
+        }
+        task = this.rulesManager.applyRules(task);
+        return task;
+    }
 }
 
 module.exports = TaskParser;

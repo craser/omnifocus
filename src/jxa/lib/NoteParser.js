@@ -30,8 +30,10 @@ function parseNote(string) {
     return note;
 }
 
-function NoteParser() {
-    this.parse = parseNote;
+class NoteParser {
+    parse(string) {
+        return parseNote(string);
+    }
 }
 
 module.exports = NoteParser;

@@ -1,13 +1,13 @@
 'use strict'
 
-const Rule = require('js/Rule');
-const TaskParser = require('js/TaskParser');
+const Rule = require('src/jxa/lib/Rule');
+const TaskParser = require('src/jxa/lib/TaskParser');
 
 /**
  * Mock the RuleManager so that the TaskParser just returns raw tasks with
  * no rules applied.
  */
-jest.mock('js/RuleManager', () => {
+jest.mock('src/jxa/lib/RuleManager', () => {
     return function () {
         this.applyRules = function (task) {
             return task;
@@ -22,7 +22,7 @@ jest.mock('js/RuleManager', () => {
  * @param month
  * @param date
  */
-jest.mock('js/CmdRunner', () => {
+jest.mock('src/jxa/lib/CmdRunner', () => {
     return function () {
         this.execSync = function (cmd, args) {
             return `executed: ${cmd} ${args.join(' ')}`;

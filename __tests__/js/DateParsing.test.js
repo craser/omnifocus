@@ -1,4 +1,4 @@
-const DateParser = require('js/DateParser');
+const DateParser = require('src/jxa/lib/DateParser');
 
 function checkExpectedDay(specifiers, expectedDayIndex) {
     specifiers.forEach((input) => {

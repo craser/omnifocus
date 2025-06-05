@@ -15,7 +15,7 @@ function loadUserConfig() {
 }
 
 function loadDefaultConfig() {
-    let config = require('../config.json');
+    let config = require('../../../config.json');
     return config;
 }
 
@@ -26,13 +26,14 @@ function loadConfig() {
     return config;
 }
 
-function getRulesConfig() {
-    return this.config.rules || [];
-}
+class ParserConfig {
+    constructor() {
+        this.config = loadConfig();
+    }
 
-function ParserConfig() {
-    this.config = loadConfig();
-    this.getRulesConfig = getRulesConfig;
+    getRulesConfig() {
+        return this.config.rules || [];
+    }
 }
 
 module.exports = ParserConfig;

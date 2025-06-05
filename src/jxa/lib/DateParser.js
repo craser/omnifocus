@@ -221,10 +221,18 @@ function overrideDueDate(currentDueDate, baseMeta, overrideMeta) {
     return dueDate;
 }
 
-function DateParser() {
-    this.parseDueDate = parseDueDate;
-    this.parseTime = parseTime; // exposed only for testing. TODO: remove
-    this.overrideDueDate = overrideDueDate;
+class DateParser {
+    parseDueDate(meta) {
+        return parseDueDate(meta);
+    }
+
+    parseTime(meta) {
+        return parseTime(meta);
+    }
+
+    overrideDueDate(currentDueDate, baseMeta, overrideMeta) {
+        return overrideDueDate(currentDueDate, baseMeta, overrideMeta);
+    }
 }
 
 module.exports = DateParser;

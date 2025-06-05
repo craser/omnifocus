@@ -1,7 +1,8 @@
-const TaskParser = require('js/TaskParser');
-jest.mock('js/RuleManager', () => {
-    return function () {
-        this.applyRules = function (task) {
+const TaskParser = require('src/jxa/lib/TaskParser');
+jest.mock('src/jxa/lib/RuleManager', () => {
+    return class RuleManager {
+        constructor() {}
+        applyRules(task) {
             return task;
         }
     }

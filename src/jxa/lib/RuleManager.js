@@ -1,7 +1,7 @@
 'use strict'
 
-const Rule = require('./Rule');
-const ParserConfig = require("./ParserConfig");
+const Rule = require('./Rule.js');
+const ParserConfig = require("./ParserConfig.js");
 
 /**
  * My day is currently blocked out like this:
@@ -43,23 +43,22 @@ const ParserConfig = require("./ParserConfig");
 
  * @return {{}}
  */
-function RuleManager() {
-    let config = new ParserConfig();
-    let rules = parseRules(config.getRulesConfig());
+class RuleManager {
+    constructor() {
+        let config = new ParserConfig();
+        this.rules = this.parseRules(config.getRulesConfig());
+    }
 
-
-    function applyRules(task) {
-        rules.forEach((rule) => {
+    applyRules(task) {
+        this.rules.forEach((rule) => {
             task = rule.apply(task);
         });
         return task;
     }
 
-    function parseRules(rulesConfig) {
+    parseRules(rulesConfig) {
         return rulesConfig.map(rule => new Rule(rule));
     }
-
-    this.applyRules = applyRules;
 }
 
 module.exports = RuleManager;

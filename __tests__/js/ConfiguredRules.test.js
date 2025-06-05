@@ -1,6 +1,6 @@
 'use strict'
 
-const TaskParser = require('js/TaskParser');
+const TaskParser = require('src/jxa/lib/TaskParser');
 const actualTaskParser = new TaskParser();
 const expectedTaskParser = (function () {
     let parser = new TaskParser();

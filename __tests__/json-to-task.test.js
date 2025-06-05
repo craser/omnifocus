@@ -1,5 +1,5 @@
-const TaskParser = require('../js/TaskParser');
-const jsonToTask = require('json-to-task');
+const TaskParser = require('../src/jxa/lib/TaskParser');
+const jsonToTask = require('src/jxa/json-to-task.js');
 
 /**
  * TODO:

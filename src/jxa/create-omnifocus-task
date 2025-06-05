@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { spawn } = require('child_process');
-const TaskParser = require('./js/TaskParser');
+const TaskParser = require('./lib/TaskParser.js');
 const path = require('path');
 
 function CreateOmniFocusTask() {

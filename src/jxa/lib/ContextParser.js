@@ -12,8 +12,10 @@ function parseContextSpec(meta) {
     }
 }
 
-function ContextParser() {
-    this.parse = parseContextSpec
+class ContextParser {
+    parse(meta) {
+        return parseContextSpec(meta);
+    }
 }
 
 module.exports = ContextParser;
