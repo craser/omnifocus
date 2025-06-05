@@ -340,7 +340,7 @@ test('Support single quotes around whole context spec', () => {
 });
 
 test('Support double quotes around whole context spec', () => {
-    var input = "task // \"whole.context spec\"";
+    var input = "task // \".whole.context spec\"";
     var parser = new TaskParser();
     var task = parser.parse(input);
     expect(task.contextSpec[0]).toEqual('whole');
@@ -357,6 +357,38 @@ test('Support single quotes around spec segments', () => {
 
 test('Support double quotes around spec segments', () => {
     var input = "task // .whole.\"context spec\"";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Tollerates other single-quoted strings left lying around before the spec', () => {
+    var input = "task // 'ignore this' .whole.\"context spec\"";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Tollerates other single-quoted strings left lying around after the spec', () => {
+    var input = "task // .whole.\"context spec\" 'ignore this'";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Tollerates other double-quoted strings left lying around before the spec', () => {
+    var input = "task // \"ignore this\" .whole.\"context spec\"";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Tollerates other double-quoted strings left lying around after the spec', () => {
+    var input = "task // .whole.\"context spec\" \"ignore this\"";
     var parser = new TaskParser();
     var task = parser.parse(input);
     expect(task.contextSpec[0]).toEqual('whole');

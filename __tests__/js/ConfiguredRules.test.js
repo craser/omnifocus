@@ -10,6 +10,15 @@ const expectedTaskParser = (function () {
     return parser;
 }());
 
+
+jest.mock('src/jxa/lib/CmdRunner', () => {
+    return function () {
+        this.execSync = function (cmd, args) {
+            return `title of ${args[0]}`;
+        }
+    }
+});
+
 function expectDate(obj, year, month, date) {
     expect(obj.getFullYear()).toBe(year);
     expect(obj.getMonth()).toBe(month);
