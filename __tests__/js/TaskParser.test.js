@@ -330,3 +330,35 @@ test('Support dashes in tag names', () => {
     var task = parser.parse(input);
     expect(task.tagNames[0]).toEqual('tag-name');
 });
+
+test('Support single quotes around whole context spec', () => {
+    var input = "task // '.whole.context spec'";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Support double quotes around whole context spec', () => {
+    var input = "task // \"whole.context spec\"";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Support single quotes around spec segments', () => {
+    var input = "task // .whole.'context spec'";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
+
+test('Support double quotes around spec segments', () => {
+    var input = "task // .whole.\"context spec\"";
+    var parser = new TaskParser();
+    var task = parser.parse(input);
+    expect(task.contextSpec[0]).toEqual('whole');
+    expect(task.contextSpec[1]).toEqual('context spec');
+});
