@@ -1,7 +1,7 @@
-const DateParser = require('./DateParser.js');
-const ContextParser = require('./ContextParser.js');
-const NoteParser = require('./NoteParser.js');
-const RuleManager = require('./RuleManager.js');
+import DateParser from './DateParser';
+import ContextParser from './ContextParser';
+import NoteParser from './NoteParser';
+import RuleManager from './RuleManager';
 
 function parseTaskName(string) {
     var name = string.replace(/\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
@@ -48,7 +48,7 @@ function parseIsFlagged(string) {
     }
 }
 
-class TaskParser {
+export default class TaskParser {
     constructor() {
         this.rulesManager = new RuleManager();
     }
@@ -72,5 +72,3 @@ class TaskParser {
         return task;
     }
 }
-
-module.exports = TaskParser;

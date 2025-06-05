@@ -21,7 +21,7 @@ function loadConfig() {
     return config;
 }
 
-class ParserConfig {
+export default class ParserConfig {
     constructor() {
         this.config = loadConfig();
     }
@@ -30,5 +30,3 @@ class ParserConfig {
         return this.config.rules || [];
     }
 }
-
-module.exports = ParserConfig;

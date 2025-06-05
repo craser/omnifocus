@@ -1,7 +1,7 @@
 'use strict'
 
-const Rule = require('./Rule.js');
-const ParserConfig = require("./ParserConfig.js");
+import Rule from './Rule';
+import ParserConfig from './ParserConfig';
 
 /**
  * My day is currently blocked out like this:
@@ -43,7 +43,7 @@ const ParserConfig = require("./ParserConfig.js");
 
  * @return {{}}
  */
-class RuleManager {
+export default class RuleManager {
     constructor() {
         let config = new ParserConfig();
         this.rules = this.parseRules(config.getRulesConfig());
@@ -60,5 +60,3 @@ class RuleManager {
         return rulesConfig.map(rule => new Rule(rule));
     }
 }
-
-module.exports = RuleManager;

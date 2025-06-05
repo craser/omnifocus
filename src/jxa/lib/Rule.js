@@ -1,7 +1,7 @@
 'use strict'
 
-const CmdRunner = require('./CmdRunner.js');
-const DateParser = require('./DateParser.js');
+import CmdRunner from './CmdRunner';
+import DateParser from './DateParser';
 const dateParser = new DateParser();
 
 function getRegex(descriptor) {
@@ -111,7 +111,7 @@ function hasTag(task, tag) {
     return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
 }
 
-class Rule {
+export default class Rule {
     constructor(config) {
         this.config = config;
     }
@@ -129,5 +129,3 @@ class Rule {
         return task;
     }
 }
-
-module.exports = Rule;
