@@ -148,21 +148,9 @@ function parseTask(json) {
     return task;
 }
 
-function run(argv) {
-    try {
-        console.log('################################################################################');
-        console.log(`creating new task: ${new Date()}`);
-        console.log(`input: "${argv[0]}"`);
-        var json = argv[0];
-        var task = parseTask(json);
-        createOmniFocusTask(task);
-        console.log('task created');
-    } catch (e) {
-        console.log(`error creating task: ${e}`);
-        console.log(e);
+// TODO: This is utter hogwash.
+export default class TaskCreator {
+    createTask(task) {
+        return createOmniFocusTask(task);
     }
-}
-
-if (typeof module != 'undefined') {
-    module.exports = run;
 }

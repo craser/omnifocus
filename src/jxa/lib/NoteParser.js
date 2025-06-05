@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * Assumes a 10-digit phone number (with optional +1 prefix) like those used in the US.
  * @param string - should be just the string recognized as a phone number

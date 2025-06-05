@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 function consumeUnquotedSegment(meta, i, spec) {
     let segment = '';
     for (; i < meta.length; i++) {

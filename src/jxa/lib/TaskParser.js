@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const DateParser = require('./DateParser.js');
 const ContextParser = require('./ContextParser.js');
 const NoteParser = require('./NoteParser.js');
