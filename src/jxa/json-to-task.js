@@ -1,5 +1,3 @@
-#!/usr/bin/env osascript -l JavaScript
-
 const DEFAULT_PROJECT = 'work';
 const DEFAULT_PARENT_TASK = 'general';
 

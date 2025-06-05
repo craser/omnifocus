@@ -45,36 +45,7 @@ const buildRollupConfig = (srcDir, file, type) => ({
         commonjs(),
         production && terser(),  // minify the output for production build
         executable(), // make the output executable.
-        generateWrapperScripts(), // Generate wrapper scripts
     ],
-});
-
-// Custom plugin to generate wrapper shell scripts (only for JXA files)
-const generateWrapperScripts = () => ({
-    name: 'generate-wrapper-scripts',
-    writeBundle(options, bundle) {
-        // Only generate wrappers for JXA files in the dist/jxa directory
-        if (!options.file.startsWith('dist/jxa/')) return;
-        
-        const distFile = options.file;
-        const scriptName = path.basename(distFile, '.js');
-        const wrapperPath = `stream-deck/${scriptName}.sh`;
-        const absoluteDistPath = path.resolve(__dirname, distFile);
-        
-        const wrapperContent = `#!/bin/bash\n${absoluteDistPath}\n`;
-        
-        // Ensure stream-deck directory exists
-        const streamDeckDir = path.dirname(wrapperPath);
-        if (!fs.existsSync(streamDeckDir)) {
-            fs.mkdirSync(streamDeckDir, { recursive: true });
-        }
-        
-        // Write the wrapper script
-        fs.writeFileSync(wrapperPath, wrapperContent);
-        fs.chmodSync(wrapperPath, 0o755); // Make executable
-        
-        console.log(`Generated wrapper: ${wrapperPath}`);
-    }
 });
 
 
