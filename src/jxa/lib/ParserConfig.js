@@ -1,12 +1,12 @@
 'use strict'
 
-const fs = require("fs");
+import { cat } from './system/files.js';
 
 function loadUserConfig() {
     try {
         const home = process.env['HOME'];
         const configPath = `${home}/.ofq-config.json`;
-        let json = fs.readFileSync(configPath);
+        let json = cat(configPath);
         let config = JSON.parse(json);
         return config;
     } catch (e) {
