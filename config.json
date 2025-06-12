@@ -32,8 +32,9 @@
     {
       "name": "Put Jira tickets in a ticket-specific parent task",
       "condition": {
-        "or": [
-          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" }
+        "and": [
+          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" },
+          { "not":  { "context": "/\\b\\w{2,4}-\\d{3,4}\\b/" } }
         ]
       },
       "actions": [

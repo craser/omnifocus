@@ -83,6 +83,8 @@ function test(condition, task) {
             return parsePattern(condition.name)(task.name);
         } else if ('project' in condition) {
             return parsePattern(condition.project)(task.contextSpec[0]);
+        } else if ('context' in condition) {
+            return task.contextSpec.some(parsePattern(condition.context));
         } else if ('tag' in condition) {
             return hasTag(task, condition.tag);
         } else if ('default-date' in condition) {
