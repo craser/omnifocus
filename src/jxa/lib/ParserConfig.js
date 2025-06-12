@@ -5,8 +5,7 @@ import defaultConfig from '../../../config.json';
 
 function loadUserConfig() {
     try {
-        const home = process.env['HOME'];
-        const configPath = `${home}/.ofq-config.json`;
+        const configPath = `$HOME/.ofq-config.json`;
         const json = cat(configPath);
         const config = JSON.parse(json);
         return config;
@@ -17,7 +16,7 @@ function loadUserConfig() {
 
 function loadConfig() {
     let userConfig = loadUserConfig();
-    const config = Object.assign(defaultConfig, userConfig);
+    const config = { ...defaultConfig, ...userConfig };
     return config;
 }
 
