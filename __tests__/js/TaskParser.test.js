@@ -1,4 +1,5 @@
-const TaskParser = require('src/jxa/lib/TaskParser');
+import TaskParser from 'src/jxa/lib/TaskParser';
+
 jest.mock('src/jxa/lib/RuleManager', () => {
     return class RuleManager {
         constructor() {}

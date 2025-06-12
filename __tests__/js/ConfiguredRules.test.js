@@ -1,7 +1,7 @@
 'use strict'
 
-const TaskParser = require('src/jxa/lib/TaskParser');
-const CmdRunner = require('src/jxa/lib/CmdRunner');
+import TaskParser from 'src/jxa/lib/TaskParser';
+import CmdRunner from 'src/jxa/lib/CmdRunner';
 
 const actualTaskParser = new TaskParser();
 const expectedTaskParser = (function () {

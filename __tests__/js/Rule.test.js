@@ -1,7 +1,7 @@
 'use strict'
 
-const Rule = require('src/jxa/lib/Rule');
-const TaskParser = require('src/jxa/lib/TaskParser');
+import Rule from 'src/jxa/lib/Rule';
+import TaskParser from 'src/jxa/lib/TaskParser';
 
 /**
  * Mock the RuleManager so that the TaskParser just returns raw tasks with

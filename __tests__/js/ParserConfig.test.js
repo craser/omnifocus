@@ -1,4 +1,4 @@
-const ParserConfig = require('src/jxa/lib/ParserConfig');
+import ParserConfig  from 'src/jxa/lib/ParserConfig';
 
 test('should exist', () => {
     expect(ParserConfig).toBeDefined();
