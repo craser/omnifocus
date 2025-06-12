@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Temporary script so I don't have to reconfigure all the client code/apps that use this. Just passes everything along
+# to the new & improved version.
+
+./dist/jxa/create-omnifoucs-task.js $*
