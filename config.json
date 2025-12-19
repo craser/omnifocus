@@ -65,26 +65,6 @@
       ]
     },
     {
-      "name": "Default empty context to work project",
-      "condition": { "no-project": true },
-      "actions": [
-        { "project": "work" },
-        { "parent": "general" }
-      ]
-    },
-    {
-      "name": "Default work tasks to general parent task",
-      "condition": {
-        "and": [
-          { "project": "/\\bwork\\b/" },
-          { "no-parent": true }
-        ]
-      },
-      "actions": [
-        { "parent": "general" }
-      ]
-    },
-    {
       "name": "Tag expected tasks as :waiting, due at 10pm",
       "condition": { "name": "/expect/i" },
       "actions": [

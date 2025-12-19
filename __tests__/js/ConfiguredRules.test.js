@@ -57,17 +57,17 @@ function expectRulesResult(actualInput, expectedInput) {
     expect(task.dueDate.toString()).toBe(expected.dueDate.toString());
 }
 
-test('By default, place tasks in .work.general, due today at 3pm', () => {
+test('By default, place tasks in the inbox, due today at 7pm', () => {
     expectRulesResult(
         'task',
-        'task // .work.general today 3pm'
+        'task // today 7pm'
     );
 });
 
 test('By default, place tasks in .work.general, due on the specified day by 3pm', () => {
     expectRulesResult(
         'task name // :tagname1 tuesday',
-        'task name // :tagname1 .work.general tuesday 3pm'
+        'task name // :tagname1 tuesday 7pm'
     );
 })
 
@@ -81,14 +81,14 @@ test('Tag Expecting tasks as :waiting, due at 10pm', () => {
 test('Tag Expecting tasks as :waiting, due at 10pm unless otherwise specified', () => {
     expectRulesResult(
         'Expect task name // :tagname1 tuesday 4pm',
-        'Expect task name // .work.general :tagname1 :waiting tuesday 4pm'
+        'Expect task name // :tagname1 :waiting tuesday 4pm'
     );
 })
 
 test('Should auto-set the due date on .work tasks to 3pm', () => {
     expectRulesResult(
-        'work task',
-        'work task // .work.general today 3pm'
+        'work task // .work',
+        'work task // .work today 3pm'
     );
 });
 
@@ -109,21 +109,21 @@ test('Should set the time on :waiting tasks to 10pm', () => {
 test('Should set the time on .work tasks to 3pm', () => {
     expectRulesResult(
         'work task // .work',
-        'work task // .work.general today 3pm'
+        'work task // .work today 3pm'
     );
 });
 
-test('Should set the time on .work tasks to 3pm, even if tagged as :waiting' , () => {
+test('Should set the time on .work tasks to 3pm, even if tagged as :waiting', () => {
     expectRulesResult(
-        'Expect task name // :tagname1 tuesday',
-        'Expect task name // .work.general :tagname1 :waiting tuesday 3pm'
+        'Expect task name // :tagname1 .work tuesday',
+        'Expect task name // .work :tagname1 :waiting tuesday 3pm'
     );
 })
 
 test('Should NOT set the time on .work tasks if time is specified', () => {
     expectRulesResult(
         'work task // .work 10am',
-        'work task // .work.general today 10am'
+        'work task // .work today 10am'
     );
 });
 
@@ -178,13 +178,6 @@ test('Should auto-detect Jira tickets & put in context UNLESS context is already
     expectRulesResult(
         "LOE for THX-1138 // .THX-1138",
         "LOE for THX-1138 // .work.THX-1138 today 3pm"
-    );
-});
-
-test('Should default context to .work.general', () => {
-    expectRulesResult(
-        'task',
-        'task // .work.general today 3pm'
     );
 });
 
