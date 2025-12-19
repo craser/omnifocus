@@ -6,6 +6,7 @@ import defaultConfig from '../../../config.json';
 function loadUserConfig() {
     try {
         const configPath = `$HOME/.ofq-config.json`;
+        console.log(`loading config from ${configPath}`);
         const json = cat(configPath);
         const config = JSON.parse(json);
         return config;
