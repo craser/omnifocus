@@ -94,10 +94,10 @@ function consumeMeta(meta) {
     return spec;
 }
 
-class ContextParser {
+class ContextTokenizer {
     parse(meta) {
         return consumeMeta(meta);
     }
 }
 
-module.exports = ContextParser;
+module.exports = ContextTokenizer;

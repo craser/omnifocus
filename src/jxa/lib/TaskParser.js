@@ -1,5 +1,5 @@
 import DateParser from './DateParser';
-import ContextParser from './ContextParser';
+import ContextTokenizer from './ContextTokenizer';
 import NoteParser from './NoteParser';
 import RuleManager from './RuleManager';
 
@@ -63,7 +63,7 @@ export default class TaskParser {
             note: new NoteParser().parse(string),
             dueDate: new DateParser().parseDueDate(meta),
             flagged: parseIsFlagged(string),
-            contextSpec: new ContextParser().parse(meta),
+            contextSpec: new ContextTokenizer().parse(meta),
             completed: isCompleted,
             completionDate: (isCompleted ? new Date() : null),
             primaryTagName: getPrimaryTagName(meta)
