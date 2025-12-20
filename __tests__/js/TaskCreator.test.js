@@ -69,7 +69,7 @@ describe('TaskCreator', () => {
             contextSpec: ['nope'] // does not exist
         };
         const creator = new TaskCreator();
-        expect(() => creator.createTask(task)).toThrow();
+        expect(() => creator.createTask(task)). toThrow();
     });
 
     it('valid context → create task under context', () => {

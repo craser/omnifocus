@@ -36,7 +36,7 @@ function createProjectTask() {
 function getProjectSubtask() {
     let omniFocus = new OmniFocus();
     const project = omniFocus.getActiveProject('bogus project');
-    const subtask = omniFocus.getTask(project, 'subtask');
+    const subtask = omniFocus.getChild(project, 'subtask');
     console.log(`subtask name: ${subtask.name.get()}`);
 }
 
@@ -49,7 +49,7 @@ function createProjectSubSubTask() {
 
     let omniFocus = new OmniFocus();
     let project = omniFocus.getActiveProject('bogus');
-    let subtask = omniFocus.getTask(project, 'subtask')
+    let subtask = omniFocus.getChild(project, 'subtask')
     let omniFocusTask = omniFocus.createTask(task);
     let subsubtask = omniFocus.addTask(subtask, omniFocusTask);
     console.log(`sub-sub-task created: ${!!subsubtask}`);

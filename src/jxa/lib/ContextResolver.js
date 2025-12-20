@@ -17,7 +17,7 @@ export default class ContextResolver {
             const omniFocus = new OmniFocus();
             let context = omniFocus.getActiveProject(contextSpec.shift());
             while (contextSpec.length) {
-                context = omniFocus.getTask(context, contextSpec.shift());
+                context = omniFocus.getChild(context, contextSpec.shift());
             }
             if (!context) {
                 throw new Error(`No such context: .${contextSpec.join('.')}`);

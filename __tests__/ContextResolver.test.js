@@ -16,7 +16,7 @@ class MockProject {
 const mockOmniFocus = {
     getActiveProject: jest.fn(),
     createTask: jest.fn(),
-    getTask: jest.fn(),
+    getChild: jest.fn(),
     addTask: jest.fn(),
     getTag: jest.fn(),
     addTags: jest.fn(),
@@ -24,7 +24,7 @@ const mockOmniFocus = {
         resetMockOmniFocus: () => {
             mockOmniFocus.getActiveProject.mockReset();
             mockOmniFocus.createTask.mockReset();
-            mockOmniFocus.getTask.mockReset();
+            mockOmniFocus.getChild.mockReset();
             mockOmniFocus.addTask.mockReset();
             mockOmniFocus.getTag.mockReset();
             mockOmniFocus.addTags.mockReset();
@@ -69,7 +69,7 @@ describe('ContextResolver', () => {
         let mockParentProject = new MockProject('parent');
         let mockTask = new MockProject('child');
         mockOmniFocus.getActiveProject.mockReturnValueOnce(mockParentProject);
-        mockOmniFocus.getTask.mockReturnValue(mockTask);
+        mockOmniFocus.getChild.mockReturnValue(mockTask);
 
         const spec = ['parent', 'child'];
         const context = new ContextResolver().resolve(spec);

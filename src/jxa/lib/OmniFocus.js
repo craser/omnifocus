@@ -29,7 +29,7 @@ export default class OmniFocus {
     // ************************************************************************************************************** //
     // Tasks
 
-    getTask(parent, taskName) {
+    getChild(parent, taskName) {
         try {
             var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
             var task = tasks.length ? tasks[0] : null;
