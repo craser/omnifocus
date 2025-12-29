@@ -16,17 +16,6 @@ function DayOfWeek(name, pattern, index) {
     this.index = index;
 }
 
-/**
- * TODO: REMOVE getDefaultDate()
- * Keeping this just for debugging, but should
- * be replaced with basic `new Date()` call.
- * @return Date - now.
- */
-function getDefaultDate() {
-    var date = new Date();
-    return date;
-}
-
 function parseDayOfWeek(meta) {
     var date = new Date();
     DAYS_OF_WEEK.forEach(function (day) {
@@ -61,11 +50,19 @@ function parseBaseDate(meta) {
         var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
         var month = line[1];
         var day = line[2];
-        var year = line[4] || new Date().getFullYear();
-        var date = getDefaultDate();
+        var year = line[4];
+        var date = new Date();
         date.setMonth(parseInt(month) - 1);
         date.setDate(day);
-        date.setFullYear(year);
+        if (year) {
+            date.setFullYear(year);
+        } else {
+            // Assume due date is in the future - current year if possible, next year if necessary.
+            date.setFullYear(new Date().getFullYear());
+            if (date < new Date()) {
+                date.setFullYear(date.getFullYear() + 1); // due date is in the p
+            }
+        }
         return date;
     }
 }
@@ -73,7 +70,7 @@ function parseBaseDate(meta) {
 function applyDateSpecifier(baseDate, meta) {
     let specifiedDate = parseBaseDate(meta);
     if (specifiedDate) {
-        baseDate = baseDate || getDefaultDate();
+        baseDate = baseDate || new Date();
         baseDate.setYear(specifiedDate.getFullYear());
         baseDate.setMonth(specifiedDate.getMonth());
         baseDate.setDate(specifiedDate.getDate());
@@ -82,7 +79,7 @@ function applyDateSpecifier(baseDate, meta) {
 }
 
 function applyDateModifiers(baseDate, meta) {
-    let modDate = baseDate || getDefaultDate();
+    let modDate = baseDate || new Date();
     if (/\bnow\b/i.test(meta)) {
         var now = new Date();
         modDate.setYear(now.getFullYear());
@@ -186,7 +183,7 @@ function parseTime(meta) {
 function applyTime(baseDate, meta) {
     var time = parseTime(meta);
     if (time) {
-        baseDate = baseDate || getDefaultDate();
+        baseDate = baseDate || new Date();
         baseDate.setHours(time.hours, time.minutes, time.seconds);
     }
     return baseDate;

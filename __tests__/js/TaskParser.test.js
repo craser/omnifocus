@@ -32,6 +32,16 @@ function expectTask(task, expected) {
     expect(task.primaryTagName).toBe(expected.primaryTagName);
 }
 
+beforeEach(() => {
+    jest.useFakeTimers('modern');
+    jest.setSystemTime(new Date('2021-01-01T08:00:00.000Z'));
+});
+
+afterEach(() => {
+    jest.useRealTimers();
+})
+
+
 test('Reasonable defaults', () => {
     var parser = new TaskParser();
     var task = parser.parse('task');
@@ -78,6 +88,24 @@ test('Support "tomorrow" and "tmw" as due date', () => {
         expectDate(task.dueDate, 2021, 0, 2);
     });
 });
+
+test('Assume intended due date is in the future', () => {
+    jest.setSystemTime(new Date('2021-10-01T08:00:00.000Z')); // October 10, 2021
+    const input = 'task name // 9/1 7pm';
+    const parser = new TaskParser();
+    const task = parser.parse(input);
+    expectTask(task, {
+        name: 'task name',
+        tagNames: [],
+        note: '',
+        flagged: false,
+        contextSpec: [],
+        completed: false,
+        primaryTagName: null
+    });
+    // Future 9/1 is in 2022
+    expectDateTime(task.dueDate, 2022, 8, 1, 19, 0);
+})
 
 test('Sample 1', () => {
     var input = 'task name // :tagname1, :tagname2 .project 5/11/2023 11:22pm';

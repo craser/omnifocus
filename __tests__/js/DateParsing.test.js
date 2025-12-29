@@ -25,6 +25,15 @@ function checkExpectedTime(specifier, expectedHours, expectedMinutes) {
     expect(time.minutes).toBe(expectedMinutes);
 }
 
+beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2021-01-01T08:00:00.000Z'));
+});
+
+afterEach(() => {
+    jest.useRealTimers();
+})
+
 test('parseTask should correctly interpret "now" as due date', () => {
     var now = new Date();
     checkExpectedTime('now', now.getHours(), now.getMinutes());

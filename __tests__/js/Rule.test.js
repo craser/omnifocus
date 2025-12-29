@@ -30,6 +30,15 @@ jest.mock('src/jxa/lib/CmdRunner', () => {
     }
 });
 
+beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2021-01-01T08:00:00.000Z'));
+});
+
+afterEach(() => {
+    jest.useRealTimers();
+});
+
 function expectDate(obj, year, month, date) {
     expect(obj.getFullYear()).toBe(year);
     expect(obj.getMonth()).toBe(month);
