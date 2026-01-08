@@ -51,10 +51,10 @@ describe('TaskCreator', () => {
         const mockProject = { name: () => 'existing (empty context test)'};
         MockOmniFocus.getActiveProject.mockReturnValue(mockProject);
         const creator = new TaskCreator();
-        const ofTask = creator.createTask(task);
+        const result = creator.createTask(task);
+        const { ofTask } = result;
         expect(MockOmniFocus.addTask).toHaveBeenCalledTimes(1);
         expect(MockOmniFocus.addTask).toHaveBeenCalledWith(null, ofTask);
-
     });
 
     it('invalid context → throw', () => {
@@ -69,7 +69,8 @@ describe('TaskCreator', () => {
             contextSpec: ['nope'] // does not exist
         };
         const creator = new TaskCreator();
-        expect(() => creator.createTask(task)). toThrow();
+        const result = creator.createTask(task);
+        expect(result.success).toBe(false);
     });
 
     it('valid context → create task under context', () => {
@@ -87,7 +88,8 @@ describe('TaskCreator', () => {
         MockOmniFocus.getActiveProject.mockReturnValue(mockProject);
         MockOmniFocus.createTask.mockReturnValue('RETURNED CREATED TASK');
         const creator = new TaskCreator();
-        const ofTask = creator.createTask(task);
+        const result = creator.createTask(task);
+        const { ofTask } = result;
         expect(ofTask).toBe('RETURNED CREATED TASK');
         expect(MockOmniFocus.addTask).toHaveBeenCalledWith(mockProject, ofTask);
     })

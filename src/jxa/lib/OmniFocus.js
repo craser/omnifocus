@@ -21,7 +21,7 @@ export default class OmniFocus {
             }
             return null;
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
@@ -35,7 +35,7 @@ export default class OmniFocus {
             var task = tasks.length ? tasks[0] : null;
             return task;
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
