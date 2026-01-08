@@ -50,43 +50,66 @@ describe('ContextResolver', () => {
         mockOmniFocus.mock.resetMockOmniFocus();
     });
 
-    it('should resolve an empty context to null', () => {
-        const spec = [];
-        const context = new ContextResolver().resolve(spec);
-        expect(context).toBe(null);
-    })
+    describe('resolve', () => {
 
-    it('should resolve an project name to a project', () => {
-        let mockProject = new MockProject('existing');
-        mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
-        const spec = ['project'];
-        const context = new ContextResolver().resolve(spec);
-        expect(mockOmniFocus.getActiveProject).toHaveBeenCalledWith('project');
-        expect(context).toBe(mockProject);
-    })
+        it('should resolve an empty context to null', () => {
+            const spec = [];
+            const context = new ContextResolver().resolve(spec);
+            expect(context).toBe(null);
+        })
 
-    it('should resolve nested project names to a project', () => {
-        let mockParentProject = new MockProject('parent');
-        let mockTask = new MockProject('child');
-        mockOmniFocus.getActiveProject.mockReturnValueOnce(mockParentProject);
-        mockOmniFocus.getChild.mockReturnValue(mockTask);
+        it('should resolve an project name to a project', () => {
+            let mockProject = new MockProject('existing');
+            mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
+            const spec = ['project'];
+            const context = new ContextResolver().resolve(spec);
+            expect(mockOmniFocus.getActiveProject).toHaveBeenCalledWith('project');
+            expect(context).toBe(mockProject);
+        })
 
-        const spec = ['parent', 'child'];
-        const context = new ContextResolver().resolve(spec);
-        expect(context).toBe(mockTask);
+        it('should resolve nested project names to a project', () => {
+            let mockParentProject = new MockProject('parent');
+            let mockTask = new MockProject('child');
+            mockOmniFocus.getActiveProject.mockReturnValueOnce(mockParentProject);
+            mockOmniFocus.getChild.mockReturnValue(mockTask);
+
+            const spec = ['parent', 'child'];
+            const context = new ContextResolver().resolve(spec);
+            expect(context).toBe(mockTask);
+        });
+
+        it('should throw if context cannot be resolved', () => {
+            const spec = ['nope'];
+            expect(() => new ContextResolver().resolve(spec)).toThrow();
+        });
+
+        it('should throw if any part of context cannot be resolved', () => {
+            const spec = ['parent', 'child'];
+            let mockProject = new MockProject('parent');
+            mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
+            expect(() => new ContextResolver().resolve(spec)).toThrow();
+        });
+
     });
 
-    it('should throw if context cannot be resolved', () => {
-        const spec = ['nope'];
-        expect(() => new ContextResolver().resolve(spec)).toThrow();
+    describe('getCanonicalSpec', () => {
+        it('should resolve shortened names to full Project/Task names', () => {
+            let mockParentProject = new MockProject('Expanded Project Name');
+            let mockTask = new MockProject('Expanded Task Name');
+            mockOmniFocus.getActiveProject.mockReturnValueOnce(mockParentProject);
+            mockOmniFocus.getChild.mockReturnValue(mockTask);
+
+            const spec = ['parent', 'child']; // this doesn't matter - return values mocked
+            const context = new ContextResolver().getCanonicalSpec(spec);
+            expect(context).toEqual(['Expanded Project Name', 'Expanded Task Name']);
+        });
+
+        it('should throw if any part of context cannot be resolved', () => {
+            const spec = ['parent', 'child'];
+            let mockProject = new MockProject('parent');
+            mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
+            expect(() => new ContextResolver().getCanonicalSpec(spec)).toThrow();
+        });
+
     });
-
-    it('should throw if any part of context cannot be resolved', () => {
-        const spec = ['parent', 'child'];
-        let mockProject = new MockProject('parent');
-        mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
-        expect(() => new ContextResolver().resolve(spec)).toThrow();
-    });
-
-
 })
