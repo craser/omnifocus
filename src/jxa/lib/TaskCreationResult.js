@@ -1,3 +1,5 @@
+import ContextResolver from '~/src/jxa/lib/ContextResolver.js';
+
 export default class TaskCreationResult {
     success;
     title;
@@ -9,7 +11,7 @@ export default class TaskCreationResult {
         return new TaskCreationResult({
             success: true,
             title: `Created: ${task.name}`,
-            details: `Created task in context: ${task.contextSpec.join(' → ')} `,
+            details: `Created task in ${TaskCreationResult.renderContext(task)}`,
             task: task,
             ofTask: ofTask
         });
@@ -23,6 +25,14 @@ export default class TaskCreationResult {
             task: task,
             ofTask: null
         })
+    }
+
+    static renderContext(task) {
+        const canonicalSpec = new ContextResolver().getCanonicalSpec(task.contextSpec);
+        const rendered = canonicalSpec.length
+            ? canonicalSpec.join(' → ')
+            : 'Inbox';
+        return rendered;
     }
 
     constructor({ success, title, details, task, ofTask }) {

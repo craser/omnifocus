@@ -952,32 +952,25 @@ class OmniFocus {
     // Projects
 
     getActiveProject(prjName) {
-        try {
-            var projects = this.omnifocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
-            for (let i = 0; i < projects.length; i++) {
-                const project = projects[i];
-                if (/active/i.test(project.status.get())) {
-                    return project;
-                }
+        var projects = this.omnifocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+        for (let i = 0; i < projects.length; i++) {
+            const project = projects[i];
+            if (/active/i.test(project.status.get())) {
+                return project;
             }
-            return null;
-        } catch (e) {
-            console.log(e);
-            return null;
         }
+        throw new Error(`No such project: ${prjName}`);
     }
 
     // ************************************************************************************************************** //
     // Tasks
 
     getChild(parent, taskName) {
-        try {
-            var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
-            var task = tasks.length ? tasks[0] : null;
-            return task;
-        } catch (e) {
-            console.log(e);
-            return null;
+        var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
+        if (tasks.length >= 1) {
+            return tasks[0];
+        } else {
+            throw new Error(`No such task: ${taskName}`)
         }
     }
 
@@ -1044,15 +1037,12 @@ class ContextResolver {
             return null;
         } else {
             const omniFocus = new OmniFocus();
-            let parent = omniFocus.getActiveProject(contextSpec.shift());
-            while (contextSpec.length) {
-                parent = omniFocus.getChild(parent, contextSpec.shift());
-            }
-            if (!parent) {
-                throw new Error(`No such context: .${contextSpec.join('.')}`);
-            } else {
-                return parent;
-            }
+            const project = omniFocus.getActiveProject(contextSpec[0]);
+            const context = contextSpec.slice(1).reduce(
+                (parent, name) => omniFocus.getChild(parent, name),
+                project
+            );
+            return context;
         }
     }
 
@@ -1065,7 +1055,7 @@ class ContextResolver {
      */
     getCanonicalSpec(contextSpec) {
         if (!contextSpec || !contextSpec.length) {
-            return null;
+            return [];
         } else {
             const omniFocus = new OmniFocus();
             const canonical = [];
@@ -1096,7 +1086,7 @@ class TaskCreationResult {
         return new TaskCreationResult({
             success: true,
             title: `Created: ${task.name}`,
-            details: `Created task in context: ${task.contextSpec.join(' → ')} `,
+            details: `Created task in ${TaskCreationResult.renderContext(task)}`,
             task: task,
             ofTask: ofTask
         });
@@ -1110,6 +1100,14 @@ class TaskCreationResult {
             task: task,
             ofTask: null
         })
+    }
+
+    static renderContext(task) {
+        const canonicalSpec = new ContextResolver().getCanonicalSpec(task.contextSpec);
+        const rendered = canonicalSpec.length
+            ? canonicalSpec.join(' → ')
+            : 'Inbox';
+        return rendered;
     }
 
     constructor({ success, title, details, task, ofTask }) {
@@ -1238,6 +1236,7 @@ try {
     var string = scriptArgs[0];
     var task = new TaskParser().parse(string);
     const result = new TaskCreator().createTask(task);
+    console.log('notifying...');
     notify(result.toNotificationOptions());
     console.log(JSON.stringify(result, null, 2));
     console.log(result.toString());

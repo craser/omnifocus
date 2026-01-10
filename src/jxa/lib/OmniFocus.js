@@ -11,32 +11,25 @@ export default class OmniFocus {
     // Projects
 
     getActiveProject(prjName) {
-        try {
-            var projects = this.omnifocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
-            for (let i = 0; i < projects.length; i++) {
-                const project = projects[i];
-                if (/active/i.test(project.status.get())) {
-                    return project;
-                }
+        var projects = this.omnifocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+        for (let i = 0; i < projects.length; i++) {
+            const project = projects[i];
+            if (/active/i.test(project.status.get())) {
+                return project;
             }
-            return null;
-        } catch (e) {
-            console.log(e);
-            return null;
         }
+        throw new Error(`No such project: ${prjName}`);
     }
 
     // ************************************************************************************************************** //
     // Tasks
 
     getChild(parent, taskName) {
-        try {
-            var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
-            var task = tasks.length ? tasks[0] : null;
-            return task;
-        } catch (e) {
-            console.log(e);
-            return null;
+        var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
+        if (tasks.length >= 1) {
+            return tasks[0];
+        } else {
+            throw new Error(`No such task: ${taskName}`)
         }
     }
 

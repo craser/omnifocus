@@ -48,7 +48,7 @@ describe('TaskCreator', () => {
         };
         MockOmniFocus.createTask.mockReturnValue('RETURNED CREATED TASK');
         MockOmniFocus.addTask.mockReturnValue('RETURNED ADDED TASK')
-        const mockProject = { name: () => 'existing (empty context test)'};
+        const mockProject = { name: () => 'existing (empty context test)' };
         MockOmniFocus.getActiveProject.mockReturnValue(mockProject);
         const creator = new TaskCreator();
         const result = creator.createTask(task);
@@ -68,12 +68,15 @@ describe('TaskCreator', () => {
             dueDate: null,
             contextSpec: ['nope'] // does not exist
         };
+        MockOmniFocus.getActiveProject.mockImplementationOnce(() => {
+            throw new Error()
+        });
         const creator = new TaskCreator();
         const result = creator.createTask(task);
         expect(result.success).toBe(false);
     });
 
-    it('valid context → create task under context', () => {
+    it('valid context → report correct canonical context', () => {
         const task = {
             name: 'DUMMY TASK NAME',
             note: 'DUMMY TASK NOTE',
@@ -84,13 +87,16 @@ describe('TaskCreator', () => {
             dueDate: null,
             contextSpec: ['existing'] // does not exist
         };
-        let mockProject = { name: () => 'existing'};
+        let mockProject = { name: () => 'Existing Parent Project' };
         MockOmniFocus.getActiveProject.mockReturnValue(mockProject);
-        MockOmniFocus.createTask.mockReturnValue('RETURNED CREATED TASK');
+        MockOmniFocus.createTask.mockReturnValue({
+            parent: {
+                name: 'Existing Parent Project'
+            }
+        });
         const creator = new TaskCreator();
         const result = creator.createTask(task);
-        const { ofTask } = result;
-        expect(ofTask).toBe('RETURNED CREATED TASK');
-        expect(MockOmniFocus.addTask).toHaveBeenCalledWith(mockProject, ofTask);
-    })
+        const { context } = result;
+        expect(context).toEqual(['Existing Parent Project']);
+    });
 })

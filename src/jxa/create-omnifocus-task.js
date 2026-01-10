@@ -11,6 +11,7 @@ try {
     var string = scriptArgs[0];
     var task = new TaskParser().parse(string);
     const result = new TaskCreator().createTask(task);
+    console.log('notifying...')
     notify(result.toNotificationOptions());
     console.log(JSON.stringify(result, null, 2));
     console.log(result.toString());

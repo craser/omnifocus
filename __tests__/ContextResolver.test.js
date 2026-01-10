@@ -80,6 +80,7 @@ describe('ContextResolver', () => {
 
         it('should throw if context cannot be resolved', () => {
             const spec = ['nope'];
+            mockOmniFocus.getActiveProject.mockImplementationOnce(() => { throw new Error() });
             expect(() => new ContextResolver().resolve(spec)).toThrow();
         });
 
@@ -87,12 +88,23 @@ describe('ContextResolver', () => {
             const spec = ['parent', 'child'];
             let mockProject = new MockProject('parent');
             mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
+            mockOmniFocus.getChild.mockImplementationOnce(() => { throw new Error() });
             expect(() => new ContextResolver().resolve(spec)).toThrow();
         });
 
     });
 
     describe('getCanonicalSpec', () => {
+        it('should resolve an empty context to an empty array', () => {
+            const context = new ContextResolver().getCanonicalSpec([]);
+            expect(context).toEqual([]);
+        });
+
+        it('should resolve a null context to an empty array', () => {
+            const context = new ContextResolver().getCanonicalSpec(null);
+            expect(context).toEqual([]);
+        });
+
         it('should resolve shortened names to full Project/Task names', () => {
             let mockParentProject = new MockProject('Expanded Project Name');
             let mockTask = new MockProject('Expanded Task Name');

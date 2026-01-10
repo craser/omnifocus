@@ -21,15 +21,12 @@ export default class ContextResolver {
             return null;
         } else {
             const omniFocus = new OmniFocus();
-            let parent = omniFocus.getActiveProject(contextSpec.shift());
-            while (contextSpec.length) {
-                parent = omniFocus.getChild(parent, contextSpec.shift());
-            }
-            if (!parent) {
-                throw new Error(`No such context: .${contextSpec.join('.')}`);
-            } else {
-                return parent;
-            }
+            const project = omniFocus.getActiveProject(contextSpec[0]);
+            const context = contextSpec.slice(1).reduce(
+                (parent, name) => omniFocus.getChild(parent, name),
+                project
+            );
+            return context;
         }
     }
 
@@ -42,7 +39,7 @@ export default class ContextResolver {
      */
     getCanonicalSpec(contextSpec) {
         if (!contextSpec || !contextSpec.length) {
-            return null;
+            return [];
         } else {
             const omniFocus = new OmniFocus();
             const canonical = [];
