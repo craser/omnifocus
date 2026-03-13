@@ -165,7 +165,7 @@ test('Should detect Jira tickets and put in client project', () => {
     });
     expectRulesResult(
         'THX-5150',
-        'THX-5150: title of THX-5150 // ."EmpireConstruction"."THX-5150: title of THX-5150" 7pm'
+        'THX-5150: title of THX-5150 // .EmpireConstruction 7pm'
     );
 });
 
@@ -183,7 +183,7 @@ test('Should auto-detect Jira tickets & put in context.', () => {
 test('Should auto-detect Jira tickets & put in context UNLESS context is already specified.', () => {
     expectRulesResult(
         "LOE for THX-1138 // .THX-1138",
-        "LOE for THX-1138 // .work.THX-1138 today 3pm"
+        "LOE for THX-1138 // .THX-1138 today 7pm"
     );
 });
 

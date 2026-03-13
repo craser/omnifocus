@@ -18,6 +18,41 @@
       "actions": [{ "due": null }]
     },
     {
+      "name": "Put ticket-related tasks in the ticket project",
+      "condition": {
+        "and": [
+          { "name": "/(.+\\b\\w{2,4}-\\d{3,4}\\b|\\b\\w{2,4}-\\d{3,4}\\b.+)/" },
+          { "not":  { "context": "/\\b\\w{2,4}-\\d{3,4}\\b/" } }
+        ]
+      },
+      "actions": [
+        {
+          "parent": {
+            "concatenate": [
+              {
+                "match": {
+                  "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
+                }
+              },
+              ": ",
+              {
+                "script": {
+                  "command": "/Users/craser/bin/tickets/tk-get-jira-title",
+                  "args": [
+                    {
+                      "match": {
+                        "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Just a ticket number → create ticket task under client",
       "condition": {
         "name": "/^\\w{2,5}-\\d{3,4}$/"
@@ -59,41 +94,6 @@
                 }
               ]
             }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Put Jira tickets in a ticket-specific parent task",
-      "condition": {
-        "and": [
-          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" },
-          { "not":  { "context": "/\\b\\w{2,4}-\\d{3,4}\\b/" } }
-        ]
-      },
-      "actions": [
-        {
-          "parent": {
-            "concatenate": [
-              {
-                "match": {
-                  "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
-                }
-              },
-              ": ",
-              {
-                "script": {
-                  "command": "/Users/craser/bin/tickets/tk-get-jira-title",
-                  "args": [
-                    {
-                      "match": {
-                        "name": "/\\b\\w{2,4}-\\d{3,4}\\b/"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
           }
         }
       ]
