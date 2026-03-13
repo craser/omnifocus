@@ -18,15 +18,49 @@
       "actions": [{ "due": null }]
     },
     {
-      "name": "Put Jira tickets in .work project",
+      "name": "Just a ticket number → create ticket task under client",
       "condition": {
-        "or": [
-          { "project": "/\\b\\w{2,4}-\\d{3,4}\\b/" },
-          { "name": "/\\b\\w{2,4}-\\d{3,4}\\b/" }
-        ]
+        "name": "/^\\w{2,5}-\\d{3,4}$/"
       },
       "actions": [
-        { "project": "work" }
+        {
+          "name": {
+            "concatenate": [
+              {
+                "match": {
+                  "name": "/\\b\\w{2,5}-\\d{3,4}\\b/"
+                }
+              },
+              ": ",
+              {
+                "script": {
+                  "command": "/Users/CRaser01/bin/tickets/tk-get-jira-title",
+                  "args": [
+                    {
+                      "match": {
+                        "name": "/\\b\\w{2,5}-\\d{3,4}\\b/"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "parent": {
+            "script": {
+              "command": "/Users/CRaser01/bin/tickets/tk-get-client-omnifocus-project-name",
+              "args": [
+                {
+                  "match": {
+                    "name": "/\\b\\w{2,5}-\\d{3,4}\\b/"
+                  }
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
