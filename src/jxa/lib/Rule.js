@@ -46,7 +46,9 @@ function uniq(list) {
 }
 
 function act(action, task) {
-    if ('tag' in action) {
+    if ('name' in action) {
+        task.name = evaluate(action.name, task);
+    } else if ('tag' in action) {
         task.tagNames.push(action.tag); // prepend to list
         if (task.primaryTagName == null) {
             task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the
@@ -65,6 +67,8 @@ function act(action, task) {
     } else if ('remove-tag' in action) {
         task.tagNames = task.tagNames.filter(tag => tag != action['remove-tag']);
         task.primaryTagName = task.tagNames[0] || null;
+    } else {
+        console.log(`unrecognized action: ${JSON.stringify(action)}`);
     }
     return task;
 }
@@ -103,7 +107,7 @@ function test(condition, task) {
             throw new Error('Unknown condition: ' + JSON.stringify(condition));
         }
     }
-    
+
     let result = applyCondition(condition, task);
     console.log(`test: ${JSON.stringify(condition)} => ${result}`);
     return result;
@@ -117,7 +121,7 @@ export default class Rule {
     constructor(config) {
         this.config = config;
     }
-    
+
     apply(task) {
         console.log(`applying rule: ${this.config.name}`);
         if (test(this.config.condition, task)) {

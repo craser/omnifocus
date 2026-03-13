@@ -155,13 +155,25 @@ test('Should NOT set the time on :waiting tasks if time is specified', () => {
     );
 });
 
-
-test('If the context is a JIRA ticket, context should be ["work", "Jira Ticket"]', () => {
+test('Should detect Jira tickets and put in client project', () => {
+    CmdRunner.prototype.execSync.mockImplementation((c, args) => {
+        if (/tk-get-client-omnifocus-project-name/.test(c)) {
+            return 'EmpireConstruction'
+        } else {
+            return `title of ${args[0]}`;
+        }
+    });
     expectRulesResult(
-        "jira task // .THX-1138",
-        "jira task // .work.THX-1138 today 3pm"
+        'THX-5150',
+        'THX-5150: title of THX-5150 // .EmpireConstruction'
     );
 });
+
+
+
+
+
+
 
 test('Should auto-detect Jira tickets & put in context.', () => {
     CmdRunner.prototype.execSync.mockImplementation((c, args) => `title of ${args[0]}`);

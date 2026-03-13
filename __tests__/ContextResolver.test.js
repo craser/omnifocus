@@ -14,6 +14,8 @@ class MockProject {
 }
 
 const mockOmniFocus = {
+    getFolder: jest.fn(),
+    getProjectInFolder: jest.fn(),
     getActiveProject: jest.fn(),
     createTask: jest.fn(),
     getChild: jest.fn(),
@@ -22,6 +24,8 @@ const mockOmniFocus = {
     addTags: jest.fn(),
     mock: {
         resetMockOmniFocus: () => {
+            mockOmniFocus.getFolder.mockReset();
+            mockOmniFocus.getProjectInFolder.mockReset();
             mockOmniFocus.getActiveProject.mockReset();
             mockOmniFocus.createTask.mockReset();
             mockOmniFocus.getChild.mockReset();
@@ -55,6 +59,52 @@ describe('ContextResolver', () => {
         const context = new ContextResolver().resolve(spec);
         expect(context).toBe(null);
     })
+
+    it('should resolve a folder name to a folder', () => {
+        let folder = new MockProject('folder');
+        let project = new MockProject('project');
+        mockOmniFocus.getFolder.mockImplementation((parent, name) => {
+            return (name === 'folder') ? folder : null;
+        });
+        mockOmniFocus.getProjectInFolder.mockImplementation((parent, name) => {
+            return (name === 'project') ? project : null;
+        })
+        const spec = ['folder', 'project'];
+        const context = new ContextResolver().resolve(spec);
+        expect(mockOmniFocus.getFolder).toHaveBeenCalledWith(null, 'folder');
+        expect(mockOmniFocus.getProjectInFolder).toHaveBeenCalledWith(folder, 'project');
+        expect(mockOmniFocus.getActiveProject).not.toHaveBeenCalled(); // paranoid
+        expect(context).toBe(project);
+    });
+
+    it('should resolve nested folders', () => {
+        let parentFolder = new MockProject('parent folder');
+        let childFolder = new MockProject('child folder');
+        let project = new MockProject('project');
+        mockOmniFocus.getFolder.mockImplementation((parent, name) => {
+            switch (name) {
+                case 'parent folder':
+                    return parentFolder;
+                case 'child folder':
+                    return childFolder;
+                default:
+                    return null;
+            }
+        });
+        mockOmniFocus.getProjectInFolder.mockImplementation((parent, name) => {
+            return (parent === childFolder && name === 'project')
+                ? project
+                : null;
+
+        });
+
+        const context = new ContextResolver().resolve(['parent folder', 'child folder', 'project']);
+        expect(mockOmniFocus.getFolder).toHaveBeenCalledWith(null, 'parent folder');
+        expect(mockOmniFocus.getFolder).toHaveBeenCalledWith(parentFolder, 'child folder');
+        expect(mockOmniFocus.getProjectInFolder).toHaveBeenCalledWith(childFolder, 'project');
+        expect(mockOmniFocus.getActiveProject).not.toHaveBeenCalled()
+        expect(context).toBe(project);
+    });
 
     it('should resolve an project name to a project', () => {
         let mockProject = new MockProject('existing');

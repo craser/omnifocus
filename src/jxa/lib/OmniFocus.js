@@ -7,8 +7,44 @@ export default class OmniFocus {
         this.omnifocus = Application('OmniFocus');
     }
 
+
+    // ************************************************************************************************************** //
+    // Folders
+    getFolder(parent, folderName) {
+        try {
+            if (!parent) {
+                var folders = this.omnifocus.defaultDocument.flattenedFolders.whose({ name: { _beginsWith: folderName }});
+                var folder = folders.length ? folders[0] : null;
+                return folder;
+            } else {
+                var folders = parent.folders.whose({ name: { _beginsWith: folderName }});
+                var folder = folders.length ? folders[0] : null;
+                return folder;
+            }
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
+
     // ************************************************************************************************************** //
     // Projects
+
+    getProjectInFolder(folder, prjName) {
+        try {
+            var projects = folder.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                if (/active/i.test(project.status.get())) {
+                    return project;
+                }
+            }
+            return null;
+        } catch (e) {
+            console.error(e);
+            return null;
+        }
+    }
 
     getActiveProject(prjName) {
         try {
