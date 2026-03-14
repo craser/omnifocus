@@ -1,2 +1,1298 @@
 #!/usr/bin/env osascript -l JavaScript
-"use strict";const t=[new e("sunday",/\b(sun|sunday)\b/i,0),new e("monday",/\b(mon|monday)\b/i,1),new e("tuesday",/\b(tues|tuesday)\b/i,2),new e("wednesday",/\b(wed|wednesday)\b/i,3),new e("thursday",/\b(thr|thrs|thurs|thursday)\b/i,4),new e("friday",/\b(fri|friday)\b/i,5),new e("saturday",/\b(sat|saturday)\b/i,6)];function e(t,e,n){this.name=t,this.pattern=e,this.index=n}function n(){return new Date}function r(e){if(/\bnow\b/i.test(e))return r=new Date;if(/today/i.test(e))return r=new Date;if(/tomorrow/i.test(e))return(r=new Date).setDate(r.getDate()+1),r;if(/tmw/i.test(e))return(r=new Date).setDate(r.getDate()+1),r;if(function(e){try{var n=t.find((function(t){return t.pattern.test(e)}));return!!n}catch(t){return!1}}(e)){var r=function(e){var n=new Date;return t.forEach((function(t){if(t.pattern.test(e)){var r=(new Date).getDay(),a=(t.index+7-r)%7;n.setDate(n.getDate()+a)}})),n}(e);return r}if(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/.test(e)){var a=e.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/),o=a[1],s=a[2],i=a[4]||(new Date).getFullYear();return(r=n()).setMonth(parseInt(o)-1),r.setDate(s),r.setFullYear(i),r}}function a(t,e){let a=r(e);return a&&((t=t||n()).setYear(a.getFullYear()),t.setMonth(a.getMonth()),t.setDate(a.getDate())),t}function o(t,e){let r=t||n();if(/\bnow\b/i.test(e)){var a=new Date;return r.setYear(a.getFullYear()),r.setMonth(a.getMonth()),r.setDate(a.getDate()),r}if(/next/i.test(e))return r.setDate((new Date).getDate()),r;if(/[+-]?\d+\s?days?/i.test(e)){var o=e.match(/([+-]?\d+)\s?days?/i),s=parseInt(o[1]);return r.setDate(r.getDate()+s),r}if(/[+-]?\d+\s?weeks?/i.test(e)){o=e.match(/([+-]?\d+)\s?weeks?/i),s=7*parseInt(o[1]);return r.setDate(r.getDate()+s),r}if(/[+-]?\d+\s?months?/i.test(e)){o=e.match(/([+-]?\d+)\s?months?/i);var i=parseInt(o[1]);return r.setMonth(r.getMonth()+i),r}if(/[+-]?\d+\s?years?/i.test(e)){o=e.match(/([+-]?\d+)\s?years?/i);var c=parseInt(o[1]);return r.setYear(r.getFullYear()+c),r}return t}function s(t){if(/\d+\s?hrs?/i.test(t)){var e=t.match(/(\d+)\s?hrs?/i),n=parseInt(e[1]);return(r=new Date).setHours(r.getHours()+n),{hours:r.getHours(),minutes:r.getMinutes(),seconds:0}}if(/\d+\s?mins?/i.test(t)){e=t.match(/(\d+)\s?mins?/i);var r,a=parseInt(e[1]);return(r=new Date).setMinutes(r.getMinutes()+a),{hours:r.getHours(),minutes:r.getMinutes(),seconds:0}}if(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i.test(t)){e=t.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);var o=/pm/i.test(e[4])?12:0;return{hours:n=parseInt(e[1])%12+o,minutes:a=e[3]?parseInt(e[3]):0,seconds:0}}var s;return/\bnow\b/i.test(t)||/next/i.test(t)?{hours:(s=new Date).getHours(),minutes:s.getMinutes(),seconds:0}:null}function i(t,e){var r=s(e);return r&&(t=t||n()).setHours(r.hours,r.minutes,r.seconds),t}var c=class{parseDueDate(t){return function(t){try{return i(o(r(t)||null,t),t)}catch(t){return null}}(t)}parseTime(t){return s(t)}overrideDueDate(t,e,n){return function(t,e,n){if(!r(e)&&!n)return null;let s=t;return s=a(s,n),s=a(s,e),s=o(s,n),s=o(s,e),s=i(s,n),s=i(s,e),s}(t,e,n)}};function u(t,e,n){let r="";for(;e<t.length;e++){if(" "===t[e]){n.push(r),r="",e--;break}if("."===t[e]){n.push(r),r="",e--;break}r+=t[e]}return r&&n.push(r),e}function l(t,e,n,r){let a="";for(;e<t.length;e++){if("."===t[e]){n.push(a),a="",e--;break}if(t[e]===r){n.push(a),a="";break}a+=t[e]}return a&&n.push(a),e}function d(t,e,n){for(;e<t.length&&" "!==t[e];e++)"."!==t[e]&&(e="'"===t[e]||'"'===t[e]?l(t,e+1,n,t[e]):u(t,e,n));return n}function f(t,e,n,r){for(;e<t.length&&t[e]!==r;e++)"."!==t[e]&&(e=l(t,e,n,r));return n}var g=class{parse(t){return function(t){for(var e=[],n=0;n<t.length;n++){if("."===t[n]){d(t,n,e);break}if(("'"===t[n]||'"'===t[n])&&"."===t[n+1]){f(t,n+1,e,t[n]);break}if("'"===t[n]||'"'===t[n])for(var r=t[n++];t[n++]!=r;);}return e}(t)}};var p=class{parse(t){return function(t){var e=t.replace(/^.*?(\/\*\*\s*|$)/,"");try{e+=function(t){var e=[];return t.replace(/((\s|^)(\+1)?[(]*(\d{3})[).\s]*(\d{3})[.\s\-]*(\d{4})(\s|$))/g,(function(t){e.push(function(t){return t.replace(/[^\d]/g,"").replace(/(...)(...)(....)/,"($1) $2-$3")}(t))})),e}(t).map((t=>`\np: ${t}`)).join("")}catch(n){e=t+"\n\n"+n.toString()}return e}(t)}};var m=class{execSync(t,e){const n=[t,...e].map((t=>`'${t}'`)).join(" "),r=Application.currentApplication();r.includeStandardAdditions=!0;const a=r.doShellScript(`${n} 2>&1`),o=r.doShellScript("echo $?"),s=parseInt(o);if(console.log(`doScript: ${n}`),console.log(`stdout: ${a}`),console.log(`exitCode (string): ${o}`),console.log(`exitCode (parsed): ${s}`),0!==s)throw new Error(a.join("\n"));return a}catch(t){throw console.log(`doScript error: ${t}`),t}};const h=new c;function w(t){let e=function(t){const e=/\/(?<pattern>.*)\/(?<flags>[gimy])*$/;if(e.test(t)){const{pattern:n,flags:r}=t.match(e).groups;return new RegExp(n,r)}return new RegExp(t)}(t);return function(t){return!!e.test(t)&&t.match(e)[0]}}function b(t,e){if("string"==typeof t)return t;if("match"in t)return y(t.match,e);if("concatenate"in t)return t.concatenate.map((t=>b(t,e))).join("");if("script"in t){let n=t.script,r=n.args.map((t=>b(t,e)));return(new m).execSync(n.command,r)}return t}function v(t){return t.filter(((e,n)=>t.indexOf(e)==n))}function y(t,e){let n=function(t,e){if("value"in t)return t.value;if("or"in t)return t.or.reduce(((t,n)=>t||y(n,e)),!1);if("and"in t)return t.and.reduce(((t,n)=>t&&y(n,e)),!0);if("not"in t)return!y(t.not,e);if("name"in t)return w(t.name)(e.name);if("project"in t)return w(t.project)(e.contextSpec[0]);if("context"in t)return e.contextSpec.some(w(t.context));if("tag"in t)return function(t,e){return t.tagNames.find((t=>t.toLowerCase()==e.toLowerCase()))}(e,t.tag);if("default-date"in t)return!0;if("default-time"in t)return!0;if("no-project"in t)return t["no-project"]?0==e.contextSpec.length:e.contextSpec.length>0;if("no-parent"in t)return t["no-parent"]?1==e.contextSpec.length:e.contextSpec.length>1;throw new Error("Unknown condition: "+JSON.stringify(t))}(t,e);return console.log(`test: ${JSON.stringify(t)} => ${n}`),n}class D{constructor(t){this.config=t}apply(t){return console.log(`applying rule: ${this.config.name}`),y(this.config.condition,t)&&(console.log(`    rule matched: ${this.config.name}`),this.config.actions.forEach((e=>{console.log(`        action: ${JSON.stringify(e)}`),t=function(t,e){if("tag"in t)e.tagNames.push(t.tag),null==e.primaryTagName&&(e.primaryTagName=t.tag);else if("project"in t){let n=b(t.project,e);e.contextSpec.unshift(n),e.contextSpec=v(e.contextSpec)}else if("parent"in t){let n=b(t.parent,e);e.contextSpec.push(n),e.contextSpec=v(e.contextSpec)}else"due"in t?e.dueDate=h.overrideDueDate(e.dueDate,e.meta,t.due):"remove-tag"in t&&(e.tagNames=e.tagNames.filter((e=>e!=t["remove-tag"])),e.primaryTagName=e.tagNames[0]||null);return e}(e,t)}))),console.log(`result: ${JSON.stringify(t)}`),t}}function k(){ObjC.import("stdlib");return $.getenv("HOME")}function x(t){const e=function(t){try{const e=Application.currentApplication();e.includeStandardAdditions=!0;const n=e.doShellScript(`${t} 2>&1`),r=e.doShellScript("echo $?"),a=parseInt(r);if(console.log(`doScript: ${t}`),console.log(`stdout: ${n}`),console.log(`exitCode (string): ${r}`),console.log(`exitCode (parsed): ${a}`),0!==a)throw new Error(n.join("\n"));return n}catch(t){throw console.log(`doScript error: ${t}`),t}}(`cat "${t=function(t){return t?t=(t=t.replace(/^~/,k())).replace(/^\$HOME/,k()):t}(t)}"`);if(!e)throw new Error(`File not found: ${t}`);return e}var S={description:"Config file for OmniFocus-related quick entry & command-line utilities.",github:"https://github.com/craser/omnifocus",rules:[{name:"All tasks due today by 7pm by default.",condition:{value:!0},actions:[{due:"today 7pm"}]},{name:"Tasks in movies or reading have no default due date.",condition:{or:[{project:"/\\bmovies\\b/i"},{project:"/\\breading\\b/i"}]},actions:[{due:null}]},{name:"Put Jira tickets in .work project",condition:{or:[{project:"/\\b\\w{2,4}-\\d{3,4}\\b/"},{name:"/\\b\\w{2,4}-\\d{3,4}\\b/"}]},actions:[{project:"work"}]},{name:"Put Jira tickets in a ticket-specific parent task",condition:{and:[{name:"/\\b\\w{2,4}-\\d{3,4}\\b/"},{not:{context:"/\\b\\w{2,4}-\\d{3,4}\\b/"}}]},actions:[{parent:{concatenate:[{match:{name:"/\\b\\w{2,4}-\\d{3,4}\\b/"}},": ",{script:{command:"/Users/craser/bin/tickets/tk-get-jira-title",args:[{match:{name:"/\\b\\w{2,4}-\\d{3,4}\\b/"}}]}}]}}]},{name:"Tag expected tasks as :waiting, due at 10pm",condition:{name:"/expect/i"},actions:[{tag:"waiting"},{due:"10pm"}]},{name:":waiting tasks are due at 10pm",condition:{tag:"waiting"},actions:[{due:"10pm"}]},{name:"Work tasks due at 3pm",condition:{and:[{project:"/\\bwork\\b/"}]},actions:[{due:"3pm"}]},{name:"Housekeeping tasks due at 11am",condition:{and:[{project:"/\\bhouse(keeping)?\\b/"},{"default-time":!0}]},actions:[{due:"11am"}]},{name:"Errands due at 11am",condition:{and:[{tag:"errands"}]},actions:[{due:"11am"}]},{name:"Not-due tasks have no due date",condition:{tag:"notdue"},actions:[{due:null},{"remove-tag":"notdue"}]}]};function j(){let t=function(){try{const t="$HOME/.ofq-config.json";console.log(`loading config from ${t}`);const e=x(t);return JSON.parse(e)}catch(t){return{}}}();return{...S,...t}}class T{constructor(){this.config=j()}getRulesConfig(){return this.config.rules||[]}}class N{constructor(){let t=new T;this.rules=this.parseRules(t.getRulesConfig())}applyRules(t){return this.rules.forEach((e=>{t=e.apply(t)})),t}parseRules(t){return t.map((t=>new D(t)))}}function M(t){return t.replace(/\s*\/\/.*$/,"")}function E(t){return t.replace(/^.*?((\/\/.*?)(\/\*\*.*|$)|$)/,"$2")}function I(t){var e=[];return t.replace(/(\W|^)[#:]([\w\-]+)/g,(function(t,n,r){e.push(r)})),e}function C(t){var e=I(t);return e.length?e[0]:null}function O(t){var e=E(t);return!!/\bflag(ged)?\b/i.test(e)||!!/\bnext\b/i.test(e)}class A{constructor(){this.rulesManager=new N}parse(t){var e=E(t);let n=function(t){var e=E(t);return/\bdone\b/i.test(e)}(t);var r={name:M(t),meta:e,tagNames:I(e),note:(new p).parse(t),dueDate:(new c).parseDueDate(e),flagged:O(t),contextSpec:(new g).parse(e),completed:n,completionDate:n?new Date:null,primaryTagName:C(e)};return r=this.rulesManager.applyRules(r)}}class H{constructor(){this.omnifocus=Application("OmniFocus")}getActiveProject(t){try{var e=this.omnifocus.defaultDocument.flattenedProjects.whose({name:{_beginsWith:t}});for(let t=0;t<e.length;t++){const n=e[t];if(/active/i.test(n.status.get()))return n}return null}catch(t){return console.error(t),null}}getChild(t,e){try{var n=t.tasks.whose({_and:[{name:{_beginsWith:e}},{completed:{_equals:"false"}}]});return n.length?n[0]:null}catch(t){return console.error(t),null}}addTask(t,e){t?t.tasks.push(e):this.omnifocus.defaultDocument.inboxTasks.push(e)}createTask(t){return this.omnifocus.Task(t)}addTags(t,e){this.omnifocus.add(t,{to:e.tags})}getTag(t){try{return this.omnifocus.defaultDocument.tags.whose({name:{_beginsWith:t}})[0]()}catch(t){return null}}createTag(t){var e=this.omnifocus.Tag({name:t});return this.omnifocus.defaultDocument.tags.push(e),e}}class F{resolve(t){if(t&&t.length){const e=new H;let n=e.getActiveProject(t.shift());for(;t.length;)n=e.getChild(n,t.shift());if(n)return n;throw new Error(`No such context: .${t.join(".")}`)}return null}}class R{createTask(t){var e=new H,n=t.primaryTagName&&e.getTag(t.primaryTagName),r=function(t,e){var n=[];return e.forEach((function(e){const r=t.getTag(e)||t.createTag(e);n.push(r)})),n}(e,t.tagNames),a=e.createTask({name:t.name,primaryTag:t.completed?null:n,dueDate:t.dueDate,note:t.note,completed:t.completed,flagged:t.flagged,completionDate:t.completed?new Date:null});const o=(new F).resolve(t.contextSpec);return e.addTask(o,a),e.addTags(r,a),a}}function Y(t){let e=Math.max(0,t.findIndex((t=>t.endsWith(".js"))));return t.slice(e+1)}const{scriptArgs:J}=function(){ObjC.import("stdlib");const t=$.NSProcessInfo.processInfo.arguments,e=[];for(let n=0;n<t.count;n++){const r=ObjC.unwrap(t.objectAtIndex(n));e.push(r)}return{argv:e,scriptArgs:Y(e)}}();try{console.log("################################################################################"),console.log(`creating new task: ${new Date}`),console.log(`input: "${J[0]}"`);var P=J[0],W=(new A).parse(P);(new R).createTask(W),console.log("task created")}catch(t){console.log(`error creating task: ${t}`),console.log(t)}
+'use strict';
+
+const DAYS_OF_WEEK = [
+    new DayOfWeek('sunday', /\b(sun|sunday)\b/i, 0),
+    new DayOfWeek('monday', /\b(mon|monday)\b/i, 1),
+    new DayOfWeek('tuesday', /\b(tues|tuesday)\b/i, 2),
+    new DayOfWeek('wednesday', /\b(wed|wednesday)\b/i, 3),
+    new DayOfWeek('thursday', /\b(thr|thrs|thurs|thursday)\b/i, 4),
+    new DayOfWeek('friday', /\b(fri|friday)\b/i, 5),
+    new DayOfWeek('saturday', /\b(sat|saturday)\b/i, 6),
+];
+
+function DayOfWeek(name, pattern, index) {
+    this.name = name;
+    this.pattern = pattern;
+    this.index = index;
+}
+
+/**
+ * TODO: REMOVE getDefaultDate()
+ * Keeping this just for debugging, but should
+ * be replaced with basic `new Date()` call.
+ * @return Date - now.
+ */
+function getDefaultDate() {
+    var date = new Date();
+    return date;
+}
+
+function parseDayOfWeek(meta) {
+    var date = new Date();
+    DAYS_OF_WEEK.forEach(function (day) {
+        if (day.pattern.test(meta)) {
+            var current = new Date().getDay();
+            var offset = (day.index + 7 - current) % 7;
+            date.setDate(date.getDate() + offset);
+        }
+    });
+    return date;
+}
+
+function parseBaseDate(meta) {
+    if (/\bnow\b/i.test(meta)) {
+        var date = new Date();
+        return date;
+    } else if (/today/i.test(meta)) {
+        var date = new Date();
+        return date;
+    } else if (/tomorrow/i.test(meta)) {
+        var date = new Date();
+        date.setDate(date.getDate() + 1);
+        return date;
+    } else if (/tmw/i.test(meta)) {
+        var date = new Date();
+        date.setDate(date.getDate() + 1);
+        return date;
+    } else if (hasDayOfWeek(meta)) {
+        var date = parseDayOfWeek(meta);
+        return date;
+    } else if (/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/.test(meta)) {
+        var line = meta.match(/(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?/);
+        var month = line[1];
+        var day = line[2];
+        var year = line[4] || new Date().getFullYear();
+        var date = getDefaultDate();
+        date.setMonth(parseInt(month) - 1);
+        date.setDate(day);
+        date.setFullYear(year);
+        return date;
+    }
+}
+
+function applyDateSpecifier(baseDate, meta) {
+    let specifiedDate = parseBaseDate(meta);
+    if (specifiedDate) {
+        baseDate = baseDate || getDefaultDate();
+        baseDate.setYear(specifiedDate.getFullYear());
+        baseDate.setMonth(specifiedDate.getMonth());
+        baseDate.setDate(specifiedDate.getDate());
+    }
+    return baseDate;
+}
+
+function applyDateModifiers(baseDate, meta) {
+    let modDate = baseDate || getDefaultDate();
+    if (/\bnow\b/i.test(meta)) {
+        var now = new Date();
+        modDate.setYear(now.getFullYear());
+        modDate.setMonth(now.getMonth());
+        modDate.setDate(now.getDate());
+        return modDate;
+    } else if (/next/i.test(meta)) {
+        modDate.setDate(new Date().getDate());
+        return modDate;
+    } else if (/[+-]?\d+\s?days?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?days?/i);
+        var days = parseInt(line[1]);
+        modDate.setDate(modDate.getDate() + days);
+        return modDate;
+    } else if (/[+-]?\d+\s?weeks?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?weeks?/i);
+        var days = parseInt(line[1]) * 7;
+        modDate.setDate(modDate.getDate() + days);
+        return modDate;
+    } else if (/[+-]?\d+\s?months?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?months?/i);
+        var months = parseInt(line[1]);
+        modDate.setMonth(modDate.getMonth() + months);
+        return modDate;
+    } else if (/[+-]?\d+\s?years?/i.test(meta)) {
+        var line = meta.match(/([+-]?\d+)\s?years?/i);
+        var years = parseInt(line[1]);
+        modDate.setYear(modDate.getFullYear() + years);
+        return modDate;
+    } else {
+        return baseDate;
+    }
+}
+
+function hasDayOfWeek(meta) {
+    try {
+        var found = DAYS_OF_WEEK.find(function (day) {
+            return day.pattern.test(meta);
+        });
+        return !!found;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Retrieves a time string from the given metadata string.
+ * @param meta
+ * @returns {string} Formatted time string (ex: '4:33 PM')
+ */
+function parseTime(meta) {
+    if (/\d+\s?hrs?/i.test(meta)) {
+        var line = meta.match(/(\d+)\s?hrs?/i);
+        var hours = parseInt(line[1]);
+        var date = new Date();
+        date.setHours(date.getHours() + hours);
+        return {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+            seconds: 0
+        };
+    } else if (/\d+\s?mins?/i.test(meta)) {
+        var line = meta.match(/(\d+)\s?mins?/i);
+        var minutes = parseInt(line[1]);
+        var date = new Date();
+        date.setMinutes(date.getMinutes() + minutes);
+        return {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+            seconds: 0
+        };
+    } else if (/(\d{1,2})(:(\d\d))?\s*(am|pm)/i.test(meta)) {
+        var line = meta.match(/(\d{1,2})(:(\d\d))?\s*(am|pm)/i);
+        var offset = /pm/i.test(line[4]) ? 12 : 0;
+        var hours = (parseInt(line[1]) %12) + offset;
+        var minutes = line[3] ? parseInt(line[3]) : 0;
+        return {
+            hours: hours,
+            minutes: minutes,
+            seconds: 0
+        };
+    } else if (/\bnow\b/i.test(meta)) {
+        var now = new Date();
+        return {
+            hours: now.getHours(),
+            minutes: now.getMinutes(),
+            seconds: 0
+        };
+    } else if (/next/i.test(meta)) {
+        var now = new Date();
+        return {
+            hours: now.getHours(),
+            minutes: now.getMinutes(),
+            seconds: 0
+        };
+    } else {
+        return null;
+    }
+}
+
+function applyTime(baseDate, meta) {
+    var time = parseTime(meta);
+    if (time) {
+        baseDate = baseDate || getDefaultDate();
+        baseDate.setHours(time.hours, time.minutes, time.seconds);
+    }
+    return baseDate;
+}
+
+function parseDueDate(meta) {
+    try {
+        let baseDate = parseBaseDate(meta) || null;
+        let modeDate = applyDateModifiers(baseDate, meta);
+        let timeDate = applyTime(modeDate, meta);
+        return timeDate;
+    } catch (e) {
+        return null;
+    }
+}
+
+function overrideDueDate(currentDueDate, baseMeta, overrideMeta) {
+    // oddball special case: if the override is null, that means
+    // we're clearing the due date UNLESS there's a base date
+    let specifiedDate = parseBaseDate(baseMeta);
+    if (!specifiedDate && !overrideMeta) {
+        return null;
+    }
+
+    let dueDate = currentDueDate;
+    dueDate = applyDateSpecifier(dueDate, overrideMeta);
+    dueDate = applyDateSpecifier(dueDate, baseMeta);
+    dueDate = applyDateModifiers(dueDate, overrideMeta);
+    dueDate = applyDateModifiers(dueDate, baseMeta);
+    dueDate = applyTime(dueDate, overrideMeta);
+    dueDate = applyTime(dueDate, baseMeta);
+    return dueDate;
+}
+
+class DateParser {
+    parseDueDate(meta) {
+        return parseDueDate(meta);
+    }
+
+    parseTime(meta) {
+        return parseTime(meta);
+    }
+
+    overrideDueDate(currentDueDate, baseMeta, overrideMeta) {
+        return overrideDueDate(currentDueDate, baseMeta, overrideMeta);
+    }
+}
+
+var DateParser_1 = DateParser;
+
+function consumeUnquotedSegment(meta, i, spec) {
+    let segment = '';
+    for (; i < meta.length; i++) {
+        if (meta[i] === ' ') { // end of spec
+            spec.push(segment);
+            segment = '';
+            i--; // back up so that the spec delimiter is visible
+            break;
+        } else if (meta[i] === '.') { // end of segment
+            spec.push(segment);
+            segment = '';
+            i--; // back up so that the spec delimiter is visible
+            break;
+        } else {
+            segment += meta[i];
+        }
+    }
+    
+    if (segment) {
+        spec.push(segment);
+    }
+    return i;
+}
+
+// This one does double-duty parsing both quoted segments and segments within quoted specs, hence the check for .
+function consumeQuotedSegment(meta, i, spec, quote) {
+    let segment = '';
+    for (; i < meta.length; i++) {
+        if (meta[i] === '.') { // end of segment
+            spec.push(segment);
+            segment = '';
+            i--; // back up so that the spec delimiter is visible
+            break;
+        } else if (meta[i] === quote) { // end of segment
+            spec.push(segment);
+            segment = '';
+            // leave i alone
+            break;
+        } else {
+            segment += meta[i];
+        }
+    }
+    
+    if (segment) {
+        spec.push(segment);
+    }
+    return i;
+}
+
+
+function consumeSpec(meta, i, spec) {
+    for (; i < meta.length; i++) {
+        if (meta[i] === ' ') { // end of spec
+            break;
+        } else if (meta[i] === '.') { // beginning of spec/segment
+            continue;
+        } else if (meta[i] === "'" || meta[i] === '"') {
+            i = consumeQuotedSegment(meta, i + 1, spec, meta[i]);
+        } else {
+            i = consumeUnquotedSegment(meta, i, spec);
+        }
+    }
+    return spec;
+}
+
+function consumeQuotedSpec(meta, i, spec, quote) {
+    for (; i < meta.length; i++) {
+        if (meta[i] === quote) { // end of spec
+            break;
+        } else if (meta[i] === '.') {
+            continue;
+        } else {
+            i = consumeQuotedSegment(meta, i, spec, quote);
+        }
+    }
+    return spec;
+}
+
+
+function consumeMeta(meta) {
+    var spec = [];
+    for (var i = 0; i < meta.length; i++) {
+        if (meta[i] === '.') {
+            consumeSpec(meta, i, spec);
+            break;
+        } else if ((meta[i] === "'" || meta[i] === '"') && meta[i + 1] === '.') { // beginning of spec
+            consumeQuotedSpec(meta, i+1, spec, meta[i]);
+            break;
+        } else if ((meta[i] === "'" || meta[i] === '"')) { // beginning of some other quoted thing
+            var quote = meta[i++];
+            while (meta[i++] != quote);
+        }
+    }
+    return spec;
+}
+
+class ContextTokenizer {
+    parse(meta) {
+        return consumeMeta(meta);
+    }
+}
+
+var ContextTokenizer_1 = ContextTokenizer;
+
+/**
+ * Assumes a 10-digit phone number (with optional +1 prefix) like those used in the US.
+ * @param string - should be just the string recognized as a phone number
+ * @return string - phone number formatted as (000) 000-0000
+ */
+function formatPhone(string) {
+    var digits = string.replace(/[^\d]/g, '');
+    var phone = digits.replace(/(...)(...)(....)/, "($1) $2-$3");
+    return phone;
+}
+
+function parsePhoneNumbers(string) {
+    var re = /((\s|^)(\+1)?[(]*(\d{3})[).\s]*(\d{3})[.\s\-]*(\d{4})(\s|$))/g;
+    var phones = [];
+    string.replace(re, function (p) {
+        phones.push(formatPhone(p));
+    });
+    return phones;
+}
+
+function parseNote(string) {
+    var note = string.replace(/^.*?(\/\*\*\s*|$)/, '');
+    try {
+        note += parsePhoneNumbers(string).map(p => `\np: ${p}`).join('');
+    } catch (e) {
+        note = string + '\n\n' + e.toString();
+    }
+    return note;
+}
+
+class NoteParser {
+    parse(string) {
+        return parseNote(string);
+    }
+}
+
+var NoteParser_1 = NoteParser;
+
+class CmdRunner {
+
+    getUserHomeDir() {
+        ObjC.import('stdlib'); // TODO: consolidate this into a single import statement?
+        const home = $.getenv('HOME');
+        return home;
+    }
+
+    resolveHomeDirReferences(string) {
+        const homeDir = this.getUserHomeDir();
+        const resolved = string.replaceAll(/\$HOME/g, homeDir);
+        return resolved;
+    }
+
+    execSync(cmd, args) {
+        const resolvedCommand = this.resolveHomeDirReferences(cmd);
+        const script = [resolvedCommand, ...args].map(s => `'${s}'`).join(' ');
+        const a = Application.currentApplication();
+        a.includeStandardAdditions = true;
+        const stdout = a.doShellScript(`${script} 2>&1`);
+        const exitCodeString = a.doShellScript('echo $?');
+        const exitCode = parseInt(exitCodeString);
+
+        console.log(`doScript: ${script}`);
+        console.log(`stdout: ${stdout}`);
+        console.log(`exitCode (string): ${exitCodeString}`);
+        console.log(`exitCode (parsed): ${exitCode}`);
+
+
+        if (exitCode !== 0) {
+            throw new Error(stdout.join('\n'));
+        }
+        return stdout;
+    } catch (error) {
+        console.log(`doScript error: ${error}`);
+        throw error;
+    }
+}
+
+var CmdRunner_1 = CmdRunner;
+
+const dateParser = new DateParser_1();
+
+function getRegex(descriptor) {
+    const isRegex = /\/(?<pattern>.*)\/(?<flags>[gimy])*$/;
+    if (isRegex.test(descriptor)) {
+        const { pattern, flags } = descriptor.match(isRegex).groups;
+        return new RegExp(pattern, flags);
+    } else {
+        // Treat the whole string as the pattern, no flags
+        return new RegExp(descriptor);
+    }
+}
+
+function parsePattern(descriptor) {
+    let regex = getRegex(descriptor);
+    return function (string) {
+        return regex.test(string)
+            ? string.match(regex)[0] // also functions as truthy
+            : false; // indicates no match
+    };
+}
+
+function evaluate(value, task) {
+    if (typeof value == 'string') {
+        return value;
+    } else if ('match' in value) {
+        return test(value.match, task);
+    } else if ('concatenate' in value) {
+        return value.concatenate.map((v) => evaluate(v, task)).join('');
+    } else if ('script' in value) {
+        let spec = value['script'];
+        let args = spec.args.map((arg) => evaluate(arg, task));
+        return new CmdRunner_1().execSync(spec.command, args)
+    } else {
+        return value;
+    }
+}
+
+// remove duplicates in a list
+function uniq(list) {
+    return list.filter((item, index) => list.indexOf(item) == index);
+}
+
+function act(action, task) {
+    if ('name' in action) {
+        task.name = evaluate(action.name, task);
+    } else if ('tag' in action) {
+        task.tagNames.push(action.tag); // prepend to list
+        if (task.primaryTagName == null) {
+            task.primaryTagName = action.tag; // update primary tag to reflect that the new tag is at the head of the
+                                              // list
+        }
+    } else if ('project' in action) {
+        let project = evaluate(action.project, task);
+        task.contextSpec.unshift(project);
+        task.contextSpec = uniq(task.contextSpec);
+    } else if ('parent' in action) {
+        let parent = evaluate(action.parent, task);
+        task.contextSpec.push(parent);
+        task.contextSpec = uniq(task.contextSpec);
+    } else if ('due' in action) {
+        task.dueDate = dateParser.overrideDueDate(task.dueDate, task.meta, action.due);
+    } else if ('remove-tag' in action) {
+        task.tagNames = task.tagNames.filter(tag => tag != action['remove-tag']);
+        task.primaryTagName = task.tagNames[0] || null;
+    } else {
+        console.log(`unrecognized action: ${JSON.stringify(action)}`);
+    }
+    return task;
+}
+
+function test(condition, task) {
+    function applyCondition(condition, task) {
+        if ('value' in condition) { // mostly for testing
+            return condition.value;
+        } else if ('or' in condition) {
+            return condition.or.reduce((a, condition) => a || test(condition, task), false);
+        } else if ('and' in condition) {
+            return condition.and.reduce((a, condition) => a && test(condition, task), true);
+        } else if ('not' in condition) {
+            return !test(condition.not, task);
+        } else if ('name' in condition) {
+            return parsePattern(condition.name)(task.name);
+        } else if ('project' in condition) {
+            return parsePattern(condition.project)(task.contextSpec[0]);
+        } else if ('context' in condition) {
+            return task.contextSpec.some(parsePattern(condition.context));
+        } else if ('tag' in condition) {
+            return hasTag(task, condition.tag);
+        } else if ('default-date' in condition) {
+            return true; // FIXME: DO NOT COMMIT TO CODE REPOSITORY!
+        } else if ('default-time' in condition) {
+            return true; // FIXME: DO NOT COMMIT TO CODE REPOSITORY!
+        } else if ('no-project' in condition) {
+            return condition["no-project"]
+                ? task.contextSpec.length == 0
+                : task.contextSpec.length > 0;
+        } else if ('no-parent' in condition) {
+            return condition["no-parent"]
+                ? task.contextSpec.length == 1
+                : task.contextSpec.length > 1;
+        } else {
+            throw new Error('Unknown condition: ' + JSON.stringify(condition));
+        }
+    }
+
+    let result = applyCondition(condition, task);
+    console.log(`test: ${JSON.stringify(condition)} => ${result}`);
+    return result;
+}
+
+function hasTag(task, tag) {
+    return task.tagNames.find((t) => t.toLowerCase() == tag.toLowerCase());
+}
+
+class Rule {
+    constructor(config) {
+        this.config = config;
+    }
+
+    apply(task) {
+        console.log(`applying rule: ${this.config.name}`);
+        if (test(this.config.condition, task)) {
+            console.log(`    rule matched: ${this.config.name}`);
+            this.config.actions.forEach(action => {
+                console.log(`        action: ${JSON.stringify(action)}`);
+                task = act(action, task);
+            });
+        }
+        console.log(`result: ${JSON.stringify(task)}`);
+        return task;
+    }
+}
+
+function getUserHomeDir() {
+    ObjC.import('stdlib'); // TODO: consolidate this into a single import statement?
+    const home = $.getenv('HOME');
+    return home;
+}
+
+function doScript(script) {
+    try {
+        const a = Application.currentApplication();
+        a.includeStandardAdditions = true;
+        const stdout = a.doShellScript(`${script} 2>&1`);
+        const exitCodeString = a.doShellScript('echo $?');
+        const exitCode = parseInt(exitCodeString);
+
+        console.log(`doScript: ${script}`);
+        console.log(`stdout: ${stdout}`);
+        console.log(`exitCode (string): ${exitCodeString}`);
+        console.log(`exitCode (parsed): ${exitCode}`);
+
+
+        if (exitCode !== 0) {
+            throw new Error(stdout.join('\n'));
+        }
+        return stdout;
+    } catch (error) {
+        console.log(`doScript error: ${error}`);
+        throw error;
+    }
+}
+
+/**
+ * Nodes's fs module is not available in the osascript runtime, and dealing with AppleScript's is painful, so
+ * I'm just gonna wrap up some shell commands.
+ */
+
+/**
+ * Resolves things like ~ and $HOME to the full path.
+ * @param path
+ */
+function resolvePath(path) {
+    if (!path) {
+        return path;
+    } else {
+        path = path.replace(/^~/, getUserHomeDir());
+        path = path.replace(/^\$HOME/, getUserHomeDir());
+        return path;
+    }
+}
+
+/**
+ * Returns the contents of the file at the specified path as a single string.
+ *
+ * @param path
+ * @returns {string} - The contents of the file at the specified path.
+ */
+function cat(path) {
+    path = resolvePath(path);
+    const contents = doScript(`cat "${path}"`);
+    if (!contents) {
+        throw new Error(`File not found: ${path}`);
+    }
+    return contents;
+}
+
+var description = "Config file for OmniFocus-related quick entry & command-line utilities.";
+var github = "https://github.com/craser/omnifocus";
+var rules = [
+	{
+		name: "All tasks due today by 7pm by default.",
+		condition: {
+			value: true
+		},
+		actions: [
+			{
+				due: "today 7pm"
+			}
+		]
+	},
+	{
+		name: "Tasks in movies or reading have no default due date.",
+		condition: {
+			or: [
+				{
+					project: "/\\bmovies\\b/i"
+				},
+				{
+					project: "/\\breading\\b/i"
+				}
+			]
+		},
+		actions: [
+			{
+				due: null
+			}
+		]
+	},
+	{
+		name: "Put ticket-related tasks in the ticket project",
+		condition: {
+			and: [
+				{
+					name: "/(.+\\b\\w{2,4}-\\d{3,4}\\b|\\b\\w{2,4}-\\d{3,4}\\b.+)/"
+				},
+				{
+					not: {
+						context: "/\\b\\w{2,4}-\\d{3,4}\\b/"
+					}
+				}
+			]
+		},
+		actions: [
+			{
+				parent: {
+					concatenate: [
+						{
+							match: {
+								name: "/\\b\\w{2,4}-\\d{3,4}\\b/"
+							}
+						},
+						": ",
+						{
+							script: {
+								command: "$HOME/bin/tickets/dist/tk-get-jira-title",
+								args: [
+									{
+										match: {
+											name: "/\\b\\w{2,4}-\\d{3,4}\\b/"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+	{
+		name: "Just a ticket number → create ticket task under client",
+		condition: {
+			name: "/^\\w{2,5}-\\d{3,4}$/"
+		},
+		actions: [
+			{
+				name: {
+					concatenate: [
+						{
+							match: {
+								name: "/\\b\\w{2,5}-\\d{3,4}\\b/"
+							}
+						},
+						": ",
+						{
+							script: {
+								command: "$HOME/bin/tickets/dist/tk-get-jira-title",
+								args: [
+									{
+										match: {
+											name: "/\\b\\w{2,5}-\\d{3,4}\\b/"
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				parent: {
+					script: {
+						command: "$HOME/bin/tickets/dist/tk-get-client-omnifocus-project-name",
+						args: [
+							{
+								match: {
+									name: "/\\b\\w{2,5}-\\d{3,4}\\b/"
+								}
+							}
+						]
+					}
+				}
+			}
+		]
+	},
+	{
+		name: "Tag expected tasks as :waiting, due at 10pm",
+		condition: {
+			name: "/expect/i"
+		},
+		actions: [
+			{
+				tag: "waiting"
+			},
+			{
+				due: "10pm"
+			}
+		]
+	},
+	{
+		name: ":waiting tasks are due at 10pm",
+		condition: {
+			tag: "waiting"
+		},
+		actions: [
+			{
+				due: "10pm"
+			}
+		]
+	},
+	{
+		name: "Work tasks due at 3pm",
+		condition: {
+			and: [
+				{
+					project: "/\\bwork\\b/"
+				}
+			]
+		},
+		actions: [
+			{
+				due: "3pm"
+			}
+		]
+	},
+	{
+		name: "Housekeeping tasks due at 11am",
+		condition: {
+			and: [
+				{
+					project: "/\\bhouse(keeping)?\\b/"
+				},
+				{
+					"default-time": true
+				}
+			]
+		},
+		actions: [
+			{
+				due: "11am"
+			}
+		]
+	},
+	{
+		name: "Errands due at 11am",
+		condition: {
+			and: [
+				{
+					tag: "errands"
+				}
+			]
+		},
+		actions: [
+			{
+				due: "11am"
+			}
+		]
+	},
+	{
+		name: "Not-due tasks have no due date",
+		condition: {
+			tag: "notdue"
+		},
+		actions: [
+			{
+				due: null
+			},
+			{
+				"remove-tag": "notdue"
+			}
+		]
+	}
+];
+var defaultConfig = {
+	description: description,
+	github: github,
+	rules: rules
+};
+
+function loadUserConfig() {
+    try {
+        const configPath = `$HOME/.ofq-config.json`;
+        console.log(`loading config from ${configPath}`);
+        const json = cat(configPath);
+        const config = JSON.parse(json);
+        return config;
+    } catch (e) {
+        return {}
+    }
+}
+
+function loadConfig() {
+    let userConfig = loadUserConfig();
+    const config = { ...defaultConfig, ...userConfig };
+    return config;
+}
+
+class ParserConfig {
+    constructor() {
+        this.config = loadConfig();
+    }
+
+    getRulesConfig() {
+        return this.config.rules || [];
+    }
+}
+
+/**
+ * My day is currently blocked out like this:
+ *     - 08:30am: morning meeting
+ *     - 09:00am: breakfast, email, Slack
+ *     - 09:30am: coffee, headphones, code
+ *             OR
+ *            errands
+ *     - 11:00am: ride
+ *     - 01:00pm: lunch, Slack
+ *     - 02:00pm: coffee, headphones, code
+ *     - 04:00pm: dad stuff
+ *
+ * Ideally, I'd like my daily to-do list to appear in chronological
+ * order. So let's try this:
+ *     - :errands ➤ due at 11am
+ *     - .work ➤ due at 3pm
+ *     - :housekeeping ➤ due at 9pm
+ *     - :waiting ➤ due at 10pm
+ *
+ *
+ * Going to hard-code this for now & refactor later in my copious free time.
+ *
+ * RULES:
+ *     ✓ default project: work
+ *     ✓ default parent task: general
+ *     ✓ default due date: today (implemented in DateParser)
+ *     ✓ default due time: 7pm (in DateParser)
+ *     ✓ :errands ➤ due at 11am
+ *     ✓ .housekeeping ➤ due at 11am
+ *     ✓ .work ➤ due at 3pm
+ *     ✓ :waiting ➤ due at 10pm
+ *     ✓ :notdue ➤ remove due date, AND remove :notdue tag
+ *     ✓ tasks with Jira tickets in name get that ticket injected into context spec
+ *
+ * TODO: (follow-up)
+ *     - remove default date & time logic from DateParser
+ *     - remove implementation of above rules from RuleManager
+
+ * @return {{}}
+ */
+class RuleManager {
+    constructor() {
+        let config = new ParserConfig();
+        this.rules = this.parseRules(config.getRulesConfig());
+    }
+
+    applyRules(task) {
+        this.rules.forEach((rule) => {
+            task = rule.apply(task);
+        });
+        return task;
+    }
+
+    parseRules(rulesConfig) {
+        return rulesConfig.map(rule => new Rule(rule));
+    }
+}
+
+function parseTaskName(string) {
+    var name = string.replace(/\s*\/\/.*$/, ''); // strip off trailing spaces, the //, and everything after.
+    return name;
+}
+
+/**
+ * Retrieves the metadata portaion (everything after the '//') from the input string.
+ * @param string
+ * @returns {*}
+ */
+function getMeta(string) {
+    var meta = string.replace(/^.*?((\/\/.*?)(\/\*\*.*|$)|$)/, '$2');
+    return meta;
+}
+
+function getTagNames(meta) {
+    var tags = [];
+    meta.replace(/(\W|^)[#:]([\w\-]+)/g, function (m, W, t) {
+        tags.push(t);
+    });
+    return tags;
+}
+
+function getPrimaryTagName(meta) {
+    var tagNames = getTagNames(meta);
+    return tagNames.length ? tagNames[0] : null;
+}
+
+function parseIsCompleted(string) {
+    var meta = getMeta(string);
+    var isDone = /\bdone\b/i.test(meta);
+    return isDone;
+}
+
+function parseIsFlagged(string) {
+    var meta = getMeta(string);
+    if (/\bflag(ged)?\b/i.test(meta)) {
+        return true;
+    } else if (/\bnext\b/i.test(meta)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+class TaskParser {
+    constructor() {
+        this.rulesManager = new RuleManager();
+    }
+
+    parse(string) {
+        var meta = getMeta(string);
+        let isCompleted = parseIsCompleted(string);
+        var task = {
+            name: parseTaskName(string),
+            meta: meta,
+            tagNames: getTagNames(meta),
+            note: new NoteParser_1().parse(string),
+            dueDate: new DateParser_1().parseDueDate(meta),
+            flagged: parseIsFlagged(string),
+            contextSpec: new ContextTokenizer_1().parse(meta),
+            completed: isCompleted,
+            completionDate: (isCompleted ? new Date() : null),
+            primaryTagName: getPrimaryTagName(meta)
+        };
+        task = this.rulesManager.applyRules(task);
+        return task;
+    }
+}
+
+/**
+ * Provides an abstraction layer between application logic & the OmniFocus application itself.
+ * - All methods take & receive actual JS objects, not JXA object specifiers.
+ */
+class OmniFocus {
+    constructor() {
+        this.omnifocus = Application('OmniFocus');
+    }
+
+
+    // ************************************************************************************************************** //
+    // Folders
+    getFolder(parent, folderName) {
+        try {
+            if (!folderName) {
+                console.log('no child folder name given - returning null');
+                return null;
+            }
+            else if (!parent) {
+                console.log('no parent - looking in default document');
+                var folders = this.omnifocus.defaultDocument.flattenedFolders.whose({ name: { _beginsWith: folderName }});
+                console.log(`folders found with name beginning with "${folderName}": ${folders.length}`);
+                var folder = folders.length ? folders[0] : null;
+                return folder;
+            } else {
+                console.log(`parent given - seeking ${parent.name()} → ${folderName}`);
+                console.log(`parent: ${parent.name()}`);
+                console.log(`parent.folders: ${parent.folders.length}`);
+                //var folders = parent.folders.whose({ name: { _beginsWith: folderName }});
+                var childFolder = null;
+                for (let i = 0; i < parent.folders.length; i++) {
+                    const folder = parent.folders[i];
+                    console.log(`checking folder: ${folder.name()}`);
+                    if (folder.name().startsWith(folderName)) {
+                        console.log(`found folder: ${folder.name()}`);
+                        childFolder = folder;
+                        break;
+                    }
+                }
+                console.log(`childFolder: ${childFolder}`);
+                return childFolder;
+            }
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    // ************************************************************************************************************** //
+    // Projects
+
+    getProjectInFolder(folder, prjName) {
+        console.log('getting project in folder...');
+        try {
+            //var projects = folder.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+            for (let i = 0; i < folder.projects.length; i++) {
+                const project = folder.projects[i];
+                if (!project.name.get().startsWith(prjName)) {
+                    continue;
+                } else if (!/active/i.test(project.status.get())) {
+                    continue;
+                } else {
+                    console.log(`found project: ${project.name.get()}`);
+                    return project;
+                }
+            }
+            console.log('no active project found in folder');
+            return null;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    getActiveProject(prjName) {
+        try {
+            var projects = this.omnifocus.defaultDocument.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                if (/active/i.test(project.status.get())) {
+                    return project;
+                }
+            }
+            return null;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    // ************************************************************************************************************** //
+    // Tasks
+
+    getChild(parent, taskName) {
+        try {
+            var tasks = parent.tasks.whose({ _and: [{ name: { _beginsWith: taskName } }, { completed: { _equals: "false" } }] });
+            var task = tasks.length ? tasks[0] : null;
+            return task;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /**
+     * Creates the specified task under the given parent.
+     * @param parent - the parent OmniFocus Project or Task - if null, the task will be added to the inbox.
+     * @param omniFocusTask - a JSON object holding the necessary info for creating a proper OmniFocus Task object.
+     */
+    addTask(parent, omniFocusTask) {
+        console.log('adding task...');
+        if (!parent) {
+            console.log(`no parent given - adding to inbox`);
+            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+        } else if (parent.projects) { // parent is a folder
+            console.log('parent is a folder - adding to projects');
+            // convert to a project in the futile hope we can get away with this...
+            const omniFocusProject = this.createProject(omniFocusTask); // hoping this works... probably not
+            console.log(`created project: ${!!omniFocusProject}`);
+            parent.projects.push(omniFocusProject);
+            console.log('pushed project into folder');
+        } else if (parent.tasks) { // parent is a project
+            console.log(`parent (${parent.name()}) is a project - adding to tasks`);
+            parent.tasks.push(omniFocusTask);
+        } else {
+            console.log('parent of unknown type - adding to inbox');
+            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+        }
+    }
+
+    createTask(task) {
+        return this.omnifocus.Task(task);
+    }
+
+    createProject(task) {
+        return this.omnifocus.Project(task);
+    }
+
+    // ************************************************************************************************************** //
+    // Tags
+
+    addTags(tags, task) {
+        if (!task.tags) {
+            console.log(`not adding tags to ${task.name} - no tags list. Is 'task' a Project?`);
+        } else {
+            this.omnifocus.add(tags, { to: task.tags });
+        }
+    }
+
+    getTag(tagName) {
+        try {
+            var tags = this.omnifocus.defaultDocument.tags.whose({ name: { _beginsWith: tagName } });
+            var tag = tags[0]();
+            return tag;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    createTag(tagName) {
+        var tag = this.omnifocus.Tag({
+            name: tagName
+        });
+        this.omnifocus.defaultDocument.tags.push(tag);
+        return tag;
+    }
+}
+
+/**
+ * Resolves a context specifier (a string[] of the names of Folders/Projects/Tasks) into a reference
+ * to a single Folder/Project/Task.
+ *
+ * - first n elements are assumed to be Folders, until no child folder is found
+ * - next element is assumed to be a Project (projects don't have child projects)
+ * - everything after that is assumed to be tasks/subtasks
+ */
+class ContextResolver {
+
+    resolve(contextSpec) {
+        if (!contextSpec || !contextSpec.length) {
+            return null;
+        } else {
+            const omniFocus = new OmniFocus();
+
+            let folder = omniFocus.getFolder(null, contextSpec[0]);
+            if (folder) {
+                contextSpec.shift(); // discard the name of initial folder
+                let childFolder = null;
+                console.log(`seeking child of ${folder.name()} → ${contextSpec[0]}`);
+                console.log(`contextSpec: ${contextSpec.join(', ')}`);
+                while (contextSpec.length && (childFolder = omniFocus.getFolder(folder, contextSpec[0]))) {
+                    console.log(`checking childFolder...`);
+                    console.log(`childFolder: ${childFolder.name()}`);
+                    if (childFolder) {
+                        console.log(`found child: ${childFolder.name()}`);
+                        folder = childFolder;
+                        childFolder = null;
+                        contextSpec.shift();
+                    } else {
+                        console.log(`no child of folder ${folder.name()} found called ${contextSpec[0]}`);
+                    }
+                }
+                console.log('done checking for child folders');
+            }
+
+            console.log(`assigning context... (folder found? ${!!folder})`);
+
+
+            if (contextSpec.length == 0) {
+                return folder;
+            }
+
+            let context = null;
+            if (folder) {
+                context = omniFocus.getProjectInFolder(folder, contextSpec.shift());
+            } else {
+                context = omniFocus.getActiveProject(contextSpec.shift());
+            }
+
+            console.log(`context: ${context.name()}`);
+            if (!context) {
+                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
+                throw new Error(`No project found: .${contextSpec.join('.')}`);
+            }
+
+            console.log(`contextSpec: ${contextSpec.join(', ')}`);
+            while (contextSpec.length) {
+                context = omniFocus.getChild(context, contextSpec.shift());
+            }
+            if (!context) {
+                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
+                throw new Error(`No such context: .${contextSpec.join('.')}`);
+            } else {
+                return context;
+            }
+        }
+    }
+}
+
+function parseTags(omniFocus, tagNames) {
+    var tags = [];
+    tagNames.forEach(function (tagName) {
+        const tag = omniFocus.getTag(tagName) || omniFocus.createTag(tagName);
+        tags.push(tag);
+    });
+    return tags;
+}
+
+// TODO: This is utter hogwash.
+class TaskCreator {
+    createTask(task) {
+        var omniFocus = new OmniFocus();
+        var primaryTag = task.primaryTagName && omniFocus.getTag(task.primaryTagName);
+        var tags = parseTags(omniFocus, task.tagNames);
+        var omniFocusTask = omniFocus.createTask({
+            name: task.name,
+            primaryTag: task.completed ? null : primaryTag, // OmniFocus chokes on completed tasks with a primary tag.
+            dueDate: task.dueDate,
+            note: task.note,
+            completed: task.completed,
+            flagged: task.flagged,
+            completionDate: (task.completed ? new Date() : null)
+        });
+        const context = new ContextResolver().resolve(task.contextSpec);
+        omniFocus.addTask(context, omniFocusTask);
+        omniFocus.addTags(tags, omniFocusTask);
+        return omniFocusTask;
+    }
+}
+
+/**
+ * Filters the raw argv array to remove the first few elements that specify the runtime, runtime args, and the
+ * currently executing script.
+ *
+ * I've got some really hacky guardrails around this for now.
+ */
+function getScriptArgs(all) {
+    let firstScriptArgIndex = Math.max(0, all.findIndex((arg) => arg.endsWith('.js')));
+    return all.slice(firstScriptArgIndex + 1);
+}
+
+function getCommandLineArgs() {
+    ObjC.import('stdlib'); // TODO: consolidate this into a single import statement?
+    const args = $.NSProcessInfo.processInfo.arguments;
+    const unwrapped = [];
+    for (let i = 0; i < args.count; i++) {
+        const value = ObjC.unwrap(args.objectAtIndex(i));
+        unwrapped.push(value);
+    }
+    return {
+        argv: unwrapped,
+        scriptArgs: getScriptArgs(unwrapped),
+    };
+}
+
+const { scriptArgs } = getCommandLineArgs();
+try {
+    console.log('################################################################################');
+    console.log(`creating new task: ${new Date()}`);
+    console.log(`input: "${scriptArgs[0]}"`);
+    var string = scriptArgs[0];
+    var task = new TaskParser().parse(string);
+    new TaskCreator().createTask(task);
+    console.log('task created');
+} catch (e) {
+    console.log(`error creating task: ${e}`);
+    console.log(e);
+}

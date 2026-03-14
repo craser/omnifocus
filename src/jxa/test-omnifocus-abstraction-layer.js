@@ -55,12 +55,25 @@ function createProjectSubSubTask() {
     console.log(`sub-sub-task created: ${!!subsubtask}`);
 }
 
+function createProjectInFolder() {
+    const task = {
+        name: `test project ${new Date()}`,
+    };
+    const omniFocus = new OmniFocus();
+    const folder = omniFocus.getFolder(null, 'Eileen Fisher');
+    console.log(`folder found: ${folder.name()}`);
+    const project = omniFocus.createTask(task);
+    omniFocus.addTask(folder, project);
+    console.log('project created');
+}
+
 try {
-    createInboxTask();
-    getProject();
-    createProjectTask();
-    getProjectSubtask()
-    createProjectSubSubTask()
+    // createInboxTask();
+    // getProject();
+    // createProjectTask();
+    // getProjectSubtask();
+    // createProjectSubSubTask();
+    createProjectInFolder();
 } catch (e) {
     console.log(`error testing OmniFocus abstraction layer: ${e}`);
     console.log(e);

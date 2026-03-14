@@ -12,17 +12,36 @@ export default class OmniFocus {
     // Folders
     getFolder(parent, folderName) {
         try {
-            if (!parent) {
+            if (!folderName) {
+                console.log('no child folder name given - returning null');
+                return null;
+            }
+            else if (!parent) {
+                console.log('no parent - looking in default document')
                 var folders = this.omnifocus.defaultDocument.flattenedFolders.whose({ name: { _beginsWith: folderName }});
+                console.log(`folders found with name beginning with "${folderName}": ${folders.length}`);
                 var folder = folders.length ? folders[0] : null;
                 return folder;
             } else {
-                var folders = parent.folders.whose({ name: { _beginsWith: folderName }});
-                var folder = folders.length ? folders[0] : null;
-                return folder;
+                console.log(`parent given - seeking ${parent.name()} → ${folderName}`);
+                console.log(`parent: ${parent.name()}`);
+                console.log(`parent.folders: ${parent.folders.length}`);
+                //var folders = parent.folders.whose({ name: { _beginsWith: folderName }});
+                var childFolder = null;
+                for (let i = 0; i < parent.folders.length; i++) {
+                    const folder = parent.folders[i];
+                    console.log(`checking folder: ${folder.name()}`);
+                    if (folder.name().startsWith(folderName)) {
+                        console.log(`found folder: ${folder.name()}`);
+                        childFolder = folder;
+                        break;
+                    }
+                }
+                console.log(`childFolder: ${childFolder}`);
+                return childFolder;
             }
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
@@ -31,17 +50,24 @@ export default class OmniFocus {
     // Projects
 
     getProjectInFolder(folder, prjName) {
+        console.log('getting project in folder...');
         try {
-            var projects = folder.flattenedProjects.whose({ name: { _beginsWith: prjName } });
-            for (let i = 0; i < projects.length; i++) {
-                const project = projects[i];
-                if (/active/i.test(project.status.get())) {
+            //var projects = folder.flattenedProjects.whose({ name: { _beginsWith: prjName } });
+            for (let i = 0; i < folder.projects.length; i++) {
+                const project = folder.projects[i];
+                if (!project.name.get().startsWith(prjName)) {
+                    continue;
+                } else if (!/active/i.test(project.status.get())) {
+                    continue;
+                } else {
+                    console.log(`found project: ${project.name.get()}`);
                     return project;
                 }
             }
+            console.log('no active project found in folder');
             return null;
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
@@ -57,7 +83,7 @@ export default class OmniFocus {
             }
             return null;
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
@@ -71,7 +97,7 @@ export default class OmniFocus {
             var task = tasks.length ? tasks[0] : null;
             return task;
         } catch (e) {
-            console.error(e);
+            console.log(e);
             return null;
         }
     }
@@ -82,10 +108,23 @@ export default class OmniFocus {
      * @param omniFocusTask - a JSON object holding the necessary info for creating a proper OmniFocus Task object.
      */
     addTask(parent, omniFocusTask) {
+        console.log('adding task...')
         if (!parent) {
+            console.log(`no parent given - adding to inbox`);
             this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
-        } else {
+        } else if (parent.projects) { // parent is a folder
+            console.log('parent is a folder - adding to projects');
+            // convert to a project in the futile hope we can get away with this...
+            const omniFocusProject = this.createProject(omniFocusTask); // hoping this works... probably not
+            console.log(`created project: ${!!omniFocusProject}`);
+            parent.projects.push(omniFocusProject);
+            console.log('pushed project into folder');
+        } else if (parent.tasks) { // parent is a project
+            console.log(`parent (${parent.name()}) is a project - adding to tasks`)
             parent.tasks.push(omniFocusTask);
+        } else {
+            console.log('parent of unknown type - adding to inbox');
+            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
         }
     }
 
@@ -93,11 +132,19 @@ export default class OmniFocus {
         return this.omnifocus.Task(task);
     }
 
+    createProject(task) {
+        return this.omnifocus.Project(task);
+    }
+
     // ************************************************************************************************************** //
     // Tags
 
     addTags(tags, task) {
-        this.omnifocus.add(tags, { to: task.tags });
+        if (!task.tags) {
+            console.log(`not adding tags to "${task.name}" - no tags list. Is 'task' a Project?`);
+        } else {
+            this.omnifocus.add(tags, { to: task.tags });
+        }
     }
 
     getTag(tagName) {

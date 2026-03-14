@@ -37,7 +37,7 @@
               ": ",
               {
                 "script": {
-                  "command": "/Users/craser/bin/tickets/tk-get-jira-title",
+                  "command": "$HOME/bin/tickets/dist/tk-get-jira-title",
                   "args": [
                     {
                       "match": {
@@ -69,7 +69,7 @@
               ": ",
               {
                 "script": {
-                  "command": "/Users/CRaser01/bin/tickets/tk-get-jira-title",
+                  "command": "$HOME/bin/tickets/dist/tk-get-jira-title",
                   "args": [
                     {
                       "match": {
@@ -85,7 +85,7 @@
         {
           "parent": {
             "script": {
-              "command": "/Users/CRaser01/bin/tickets/tk-get-client-omnifocus-project-name",
+              "command": "$HOME/bin/tickets/dist/tk-get-client-omnifocus-project-name",
               "args": [
                 {
                   "match": {

@@ -21,24 +21,44 @@ export default class ContextResolver {
             if (folder) {
                 contextSpec.shift(); // discard the name of initial folder
                 let childFolder = null;
-                while (childFolder = omniFocus.getFolder(folder, contextSpec[0])) {
+                console.log(`seeking child of ${folder.name()} → ${contextSpec[0]}`);
+                console.log(`contextSpec: ${contextSpec.join(', ')}`);
+                while (contextSpec.length && (childFolder = omniFocus.getFolder(folder, contextSpec[0]))) {
+                    console.log(`checking childFolder...`);
+                    console.log(`childFolder: ${childFolder.name()}`);
                     if (childFolder) {
+                        console.log(`found child: ${childFolder.name()}`);
                         folder = childFolder;
                         childFolder = null;
                         contextSpec.shift();
+                    } else {
+                        console.log(`no child of folder ${folder.name()} found called ${contextSpec[0]}`);
                     }
                 }
+                console.log('done checking for child folders');
             }
 
-            let context = folder
-                ? omniFocus.getProjectInFolder(folder, contextSpec.shift())
-                : omniFocus.getActiveProject(contextSpec.shift());
+            console.log(`assigning context... (folder found? ${!!folder})`);
 
+
+            if (contextSpec.length == 0) {
+                return folder;
+            }
+
+            let context = null;
+            if (folder) {
+                context = omniFocus.getProjectInFolder(folder, contextSpec.shift())
+            } else {
+                context = omniFocus.getActiveProject(contextSpec.shift());
+            }
+
+            console.log(`context: ${context.name()}`);
             if (!context) {
                 // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
                 throw new Error(`No project found: .${contextSpec.join('.')}`);
             }
 
+            console.log(`contextSpec: ${contextSpec.join(', ')}`);
             while (contextSpec.length) {
                 context = omniFocus.getChild(context, contextSpec.shift());
             }
