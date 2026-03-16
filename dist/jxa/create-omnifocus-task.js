@@ -1094,6 +1094,8 @@ class OmniFocus {
 
     /**
      * Creates the specified task under the given parent.
+     * @deprecated - use addTaskToProject or addTaskToFolder instead.
+     *
      * @param parent - the parent OmniFocus Project or Task - if null, the task will be added to the inbox.
      * @param omniFocusTask - a JSON object holding the necessary info for creating a proper OmniFocus Task object.
      */
@@ -1101,21 +1103,36 @@ class OmniFocus {
         console.log('adding task...');
         if (!parent) {
             console.log(`no parent given - adding to inbox`);
-            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+            this.addTaskToInbox(omniFocusTask);
         } else if (parent.projects) { // parent is a folder
-            console.log('parent is a folder - adding to projects');
-            // convert to a project in the futile hope we can get away with this...
-            const omniFocusProject = this.createProject(omniFocusTask); // hoping this works... probably not
-            console.log(`created project: ${!!omniFocusProject}`);
-            parent.projects.push(omniFocusProject);
-            console.log('pushed project into folder');
+            console.log(`"${parent.name()}" is a folder - adding to projects`);
+            this.addTaskToFolder(parent, omniFocusProject);
         } else if (parent.tasks) { // parent is a project
             console.log(`parent (${parent.name()}) is a project - adding to tasks`);
-            parent.tasks.push(omniFocusTask);
+            this.addTaskToProject(parent, omniFocusTask);
         } else {
             console.log('parent of unknown type - adding to inbox');
-            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+            this.addTaskToInbox(omniFocusTask);
         }
+    }
+
+    addTaskToInbox(task) {
+        return this.omnifocus.defaultDocument.inboxTasks.push(task);
+    }
+
+    addTaskToProject(project, task) {
+        return project.tasks.push(task);
+    }
+
+    addTaskToFolder(folder, task) {
+        // convert to a project in the futile hope we can get away with this...
+        const omniFocusProject = this.createProject(task); // hoping this works... probably not
+        console.log(`created project: ${!!omniFocusProject}`);
+        return folder.projects.push(omniFocusProject);
+    }
+
+    addTaskToParentTask(parent, task) {
+        return parent.tasks.push(task);
     }
 
     createTask(task) {
@@ -1131,7 +1148,7 @@ class OmniFocus {
 
     addTags(tags, task) {
         if (!task.tags) {
-            console.log(`not adding tags to ${task.name} - no tags list. Is 'task' a Project?`);
+            console.log(`not adding tags to "${task.name}" - no tags list. Is 'task' a Project?`);
         } else {
             this.omnifocus.add(tags, { to: task.tags });
         }
@@ -1155,6 +1172,62 @@ class OmniFocus {
         return tag;
     }
 }
+
+class Context {
+    type;
+    ofContextObject;
+    omnifocus;
+
+    static inbox(omnifocus) {
+        return new Context(Context.TYPE_INBOX, null, omnifocus);
+    }
+
+    static folder(folder, omnifocus) {
+        return new Context(Context.TYPE_FOLDER, folder, omnifocus);
+    }
+
+    static project(parent, omnifocus) {
+        return new Context(Context.TYPE_PROJECT, parent, omnifocus);
+    }
+
+    static task(parent, omnifocus) {
+        return new Context(Context.TYPE_TASK, parent, omnifocus);
+    }
+
+    constructor(type, ofContextObject, omnifocus) {
+        this.type = type;
+        this.ofContextObject = ofContextObject;
+        this.omnifocus = omnifocus;
+    }
+
+    addTask(omniFocusTask) {
+        console.log(`Adding task to ${this.type} context`);
+        switch (this.type) {
+            case Context.TYPE_FOLDER:
+                this.omnifocus.addTaskToFolder(this.ofContextObject, omniFocusTask);
+                break;
+            case Context.TYPE_PROJECT:
+                this.omnifocus.addTaskToProject(this.ofContextObject, omniFocusTask);
+                break;
+            case Context.TYPE_TASK:
+                this.omnifocus.addTaskToParentTask(this.ofContextObject, omniFocusTask);
+                break;
+            case Context.TYPE_INBOX:
+                this.omnifocus.addTaskToInbox(omniFocusTask);
+                break;
+            default:
+                console.log(`Unrecognized context type: ${this.type}. Adding to inbox.`);
+                this.omnifocus.addTaskToInbox(omniFocusTask);
+                break;
+        }
+
+    }
+}
+
+Context.TYPE_INBOX = 'inbox';
+Context.TYPE_FOLDER = 'folder';
+Context.TYPE_PROJECT = 'project';
+Context.TYPE_TASK = 'task';
 
 /**
  * Resolves a context specifier (a string[] of the names of Folders/Projects/Tasks) into a reference
@@ -1197,7 +1270,7 @@ class ContextResolver {
 
 
             if (contextSpec.length == 0) {
-                return folder;
+                return Context.folder(folder, omniFocus);
             }
 
             let context = null;
@@ -1209,8 +1282,8 @@ class ContextResolver {
 
             console.log(`context: ${context.name()}`);
             if (!context) {
-                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
-                throw new Error(`No project found: .${contextSpec.join('.')}`);
+                console.log('Unable to locate context. Returning inbox.');
+                return Context.inbox(omniFocus);
             }
 
             console.log(`contextSpec: ${contextSpec.join(', ')}`);
@@ -1218,10 +1291,10 @@ class ContextResolver {
                 context = omniFocus.getChild(context, contextSpec.shift());
             }
             if (!context) {
-                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
-                throw new Error(`No such context: .${contextSpec.join('.')}`);
+                console.log('Unable to locate context. Returning inbox');
+                return Context.inbox(omniFocus);
             } else {
-                return context;
+                return Context.project(context, omniFocus);
             }
         }
     }
@@ -1252,7 +1325,7 @@ class TaskCreator {
             completionDate: (task.completed ? new Date() : null)
         });
         const context = new ContextResolver().resolve(task.contextSpec);
-        omniFocus.addTask(context, omniFocusTask);
+        context.addTask(omniFocusTask);
         omniFocus.addTags(tags, omniFocusTask);
         return omniFocusTask;
     }

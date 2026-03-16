@@ -107,6 +107,8 @@ class OmniFocus {
 
     /**
      * Creates the specified task under the given parent.
+     * @deprecated - use addTaskToProject or addTaskToFolder instead.
+     *
      * @param parent - the parent OmniFocus Project or Task - if null, the task will be added to the inbox.
      * @param omniFocusTask - a JSON object holding the necessary info for creating a proper OmniFocus Task object.
      */
@@ -114,21 +116,36 @@ class OmniFocus {
         console.log('adding task...');
         if (!parent) {
             console.log(`no parent given - adding to inbox`);
-            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+            this.addTaskToInbox(omniFocusTask);
         } else if (parent.projects) { // parent is a folder
-            console.log('parent is a folder - adding to projects');
-            // convert to a project in the futile hope we can get away with this...
-            const omniFocusProject = this.createProject(omniFocusTask); // hoping this works... probably not
-            console.log(`created project: ${!!omniFocusProject}`);
-            parent.projects.push(omniFocusProject);
-            console.log('pushed project into folder');
+            console.log(`"${parent.name()}" is a folder - adding to projects`);
+            this.addTaskToFolder(parent, omniFocusProject);
         } else if (parent.tasks) { // parent is a project
             console.log(`parent (${parent.name()}) is a project - adding to tasks`);
-            parent.tasks.push(omniFocusTask);
+            this.addTaskToProject(parent, omniFocusTask);
         } else {
             console.log('parent of unknown type - adding to inbox');
-            this.omnifocus.defaultDocument.inboxTasks.push(omniFocusTask);
+            this.addTaskToInbox(omniFocusTask);
         }
+    }
+
+    addTaskToInbox(task) {
+        return this.omnifocus.defaultDocument.inboxTasks.push(task);
+    }
+
+    addTaskToProject(project, task) {
+        return project.tasks.push(task);
+    }
+
+    addTaskToFolder(folder, task) {
+        // convert to a project in the futile hope we can get away with this...
+        const omniFocusProject = this.createProject(task); // hoping this works... probably not
+        console.log(`created project: ${!!omniFocusProject}`);
+        return folder.projects.push(omniFocusProject);
+    }
+
+    addTaskToParentTask(parent, task) {
+        return parent.tasks.push(task);
     }
 
     createTask(task) {
@@ -144,7 +161,7 @@ class OmniFocus {
 
     addTags(tags, task) {
         if (!task.tags) {
-            console.log(`not adding tags to ${task.name} - no tags list. Is 'task' a Project?`);
+            console.log(`not adding tags to "${task.name}" - no tags list. Is 'task' a Project?`);
         } else {
             this.omnifocus.add(tags, { to: task.tags });
         }

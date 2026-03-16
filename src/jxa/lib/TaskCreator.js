@@ -26,7 +26,7 @@ export default class TaskCreator {
             completionDate: (task.completed ? new Date() : null)
         });
         const context = new ContextResolver().resolve(task.contextSpec);
-        omniFocus.addTask(context, omniFocusTask);
+        context.addTask(omniFocusTask);
         omniFocus.addTags(tags, omniFocusTask);
         return omniFocusTask;
     }

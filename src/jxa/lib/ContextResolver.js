@@ -1,4 +1,5 @@
 import OmniFocus from '~/src/jxa/lib/OmniFocus.js';
+import Context from '~/src/jxa/lib/Context.js';
 
 
 /**
@@ -12,11 +13,10 @@ import OmniFocus from '~/src/jxa/lib/OmniFocus.js';
 export default class ContextResolver {
 
     resolve(contextSpec) {
+        const omniFocus = new OmniFocus();
         if (!contextSpec || !contextSpec.length) {
-            return null;
+            return Context.inbox(omniFocus);
         } else {
-            const omniFocus = new OmniFocus();
-
             let folder = omniFocus.getFolder(null, contextSpec[0]);
             if (folder) {
                 contextSpec.shift(); // discard the name of initial folder
@@ -42,7 +42,7 @@ export default class ContextResolver {
 
 
             if (contextSpec.length == 0) {
-                return folder;
+                return Context.folder(folder, omniFocus);
             }
 
             let context = null;
@@ -54,8 +54,8 @@ export default class ContextResolver {
 
             console.log(`context: ${context.name()}`);
             if (!context) {
-                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
-                throw new Error(`No project found: .${contextSpec.join('.')}`);
+                console.log('Unable to locate context. Returning inbox.');
+                return Context.inbox(omniFocus);
             }
 
             console.log(`contextSpec: ${contextSpec.join(', ')}`);
@@ -63,10 +63,10 @@ export default class ContextResolver {
                 context = omniFocus.getChild(context, contextSpec.shift());
             }
             if (!context) {
-                // FIXME: THESE ERRORS ARE USELESS because we're discarding the spec along the way
-                throw new Error(`No such context: .${contextSpec.join('.')}`);
+                console.log('Unable to locate context. Returning inbox');
+                return Context.inbox(omniFocus);
             } else {
-                return context;
+                return Context.project(context, omniFocus);
             }
         }
     }

@@ -1,15 +1,16 @@
 import ContextResolver from '../src/jxa/lib/ContextResolver.js';
+import Context from '../src/jxa/lib/Context.js';
 
 
 class MockProject {
-    name;
+    n;
 
     constructor(name) {
-        this.name = name;
+        this.n = name;
     }
 
     name() {
-        return this.name;
+        return this.n;
     }
 }
 
@@ -54,10 +55,10 @@ describe('ContextResolver', () => {
         mockOmniFocus.mock.resetMockOmniFocus();
     });
 
-    it('should resolve an empty context to null', () => {
+    it('should resolve an empty context to inbox', () => {
         const spec = [];
         const context = new ContextResolver().resolve(spec);
-        expect(context).toBe(null);
+        expect(context.type).toBe(Context.TYPE_INBOX);
     })
 
     it('should resolve a folder name to a folder', () => {
@@ -74,7 +75,9 @@ describe('ContextResolver', () => {
         expect(mockOmniFocus.getFolder).toHaveBeenCalledWith(null, 'folder');
         expect(mockOmniFocus.getProjectInFolder).toHaveBeenCalledWith(folder, 'project');
         expect(mockOmniFocus.getActiveProject).not.toHaveBeenCalled(); // paranoid
-        expect(context).toBe(project);
+        expect(context.type).toBe(Context.TYPE_PROJECT);
+        expect(context.ofContextObject).toBe(project);
+
     });
 
     it('should resolve nested folders', () => {
@@ -103,7 +106,8 @@ describe('ContextResolver', () => {
         expect(mockOmniFocus.getFolder).toHaveBeenCalledWith(parentFolder, 'child folder');
         expect(mockOmniFocus.getProjectInFolder).toHaveBeenCalledWith(childFolder, 'project');
         expect(mockOmniFocus.getActiveProject).not.toHaveBeenCalled()
-        expect(context).toBe(project);
+        expect(context.type).toBe(Context.TYPE_PROJECT);
+        expect(context.ofContextObject).toBe(project);
     });
 
     it('should resolve an project name to a project', () => {
@@ -112,7 +116,8 @@ describe('ContextResolver', () => {
         const spec = ['project'];
         const context = new ContextResolver().resolve(spec);
         expect(mockOmniFocus.getActiveProject).toHaveBeenCalledWith('project');
-        expect(context).toBe(mockProject);
+        expect(context.type).toBe(Context.TYPE_PROJECT);
+        expect(context.ofContextObject).toBe(mockProject);
     })
 
     it('should resolve nested project names to a project', () => {
@@ -123,7 +128,8 @@ describe('ContextResolver', () => {
 
         const spec = ['parent', 'child'];
         const context = new ContextResolver().resolve(spec);
-        expect(context).toBe(mockTask);
+        expect(context.type).toBe(Context.TYPE_PROJECT);
+        expect(context.ofContextObject).toBe(mockTask);
     });
 
     it('should throw if context cannot be resolved', () => {
@@ -131,11 +137,12 @@ describe('ContextResolver', () => {
         expect(() => new ContextResolver().resolve(spec)).toThrow();
     });
 
-    it('should throw if any part of context cannot be resolved', () => {
+    it('should resolve to inbox if any part of context cannot be resolved', () => {
         const spec = ['parent', 'child'];
         let mockProject = new MockProject('parent');
         mockOmniFocus.getActiveProject.mockReturnValue(mockProject);
-        expect(() => new ContextResolver().resolve(spec)).toThrow();
+        const context = new ContextResolver().resolve(spec);
+        expect(context.type).toBe(Context.TYPE_INBOX);
     });
 
 
